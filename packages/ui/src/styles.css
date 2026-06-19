@@ -1,0 +1,61 @@
+:root {
+  /* Color primitives */
+  --ae-color-primary: #6366f1;
+  --ae-color-primary-hover: #4f46e5;
+  --ae-color-primary-active: #4338ca;
+  --ae-color-primary-fg: #ffffff;
+
+  --ae-color-secondary: #e5e7eb;
+  --ae-color-secondary-hover: #d1d5db;
+  --ae-color-secondary-fg: #111827;
+
+  --ae-color-danger: #ef4444;
+  --ae-color-danger-hover: #dc2626;
+  --ae-color-danger-fg: #ffffff;
+
+  --ae-color-success: #22c55e;
+  --ae-color-warning: #f59e0b;
+  --ae-color-info: #3b82f6;
+
+  /* Surface */
+  --ae-color-bg: #ffffff;
+  --ae-color-surface: #f9fafb;
+  --ae-color-border: #e5e7eb;
+  --ae-color-border-focus: #6366f1;
+
+  /* Text */
+  --ae-color-text: #111827;
+  --ae-color-text-muted: #6b7280;
+  --ae-color-text-placeholder: #9ca3af;
+
+  /* Spacing */
+  --ae-space-1: 0.25rem;
+  --ae-space-2: 0.5rem;
+  --ae-space-3: 0.75rem;
+  --ae-space-4: 1rem;
+  --ae-space-6: 1.5rem;
+  --ae-space-8: 2rem;
+
+  /* Typography */
+  --ae-font-sans: system-ui, -apple-system, sans-serif;
+  --ae-font-size-sm: 0.875rem;
+  --ae-font-size-base: 1rem;
+  --ae-font-size-lg: 1.125rem;
+  --ae-line-height-tight: 1.25;
+  --ae-line-height-normal: 1.5;
+
+  /* Radius */
+  --ae-radius-sm: 0.25rem;
+  --ae-radius-md: 0.375rem;
+  --ae-radius-lg: 0.5rem;
+  --ae-radius-full: 9999px;
+
+  /* Shadows */
+  --ae-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --ae-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --ae-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Transitions */
+  --ae-transition-fast: 100ms ease;
+  --ae-transition-base: 150ms ease;
+}

@@ -1,0 +1,41 @@
+{
+  "name": "@aetherAssembly/core",
+  "version": "1.0.0",
+  "type": "module",
+  "author": {
+    "name": "AetherAssembly",
+    "email": "support@aetherassembly.org",
+    "url": "https://github.com/AetherAssembly"
+  },
+  "contributors": [
+    {
+      "name": "Aster",
+      "email": "ssh-gpg-keys@protonmail.ch",
+      "url": "https://github.com/Aster1630"
+    }
+  ],
+  "license": "AGPL-3.0-only",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist .tsbuildinfo"
+  },
+  "dependencies": {
+    "idb": "^8.0.3"
+  }
+}

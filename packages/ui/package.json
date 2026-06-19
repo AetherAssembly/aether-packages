@@ -1,0 +1,45 @@
+{
+  "name": "@aetherAssembly/ui",
+  "version": "1.0.0",
+  "type": "module",
+  "author": {
+    "name": "AetherAssembly",
+    "email": "support@aetherassembly.org",
+    "url": "https://github.com/AetherAssembly"
+  },
+  "contributors": [
+    {
+      "name": "Aster",
+      "email": "ssh-gpg-keys@protonmail.ch",
+      "url": "https://github.com/Aster1630"
+    }
+  ],
+  "license": "AGPL-3.0-only",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./src/styles.css"
+  },
+  "files": [
+    "dist",
+    "src/styles.css"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "rm -rf dist .tsbuildinfo"
+  },
+  "dependencies": {
+    "@aetherAssembly/core": "*"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
