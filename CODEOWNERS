@@ -1,0 +1,8 @@
+# Default: Aster owns everything
+
+* @Aster1630
+
+# Milo owns docs and contributing guide
+
+docs/ @Aster1630 @EvilLickCompany
+.github/CONTRIBUTING.md @Aster1630 @EvilLickCompany
