@@ -1,7 +1,18 @@
 import type { StorageAdapter } from './adapter.js'
 
+type LocalStorageAdapterOptions = {
+  onError?: (error: unknown) => void
+}
+
 export class LocalStorageAdapter implements StorageAdapter {
-  constructor(private readonly prefix = '') {}
+  private readonly onError: ((error: unknown) => void) | undefined
+
+  constructor(
+    private readonly prefix = '',
+    options: LocalStorageAdapterOptions = {},
+  ) {
+    this.onError = options.onError
+  }
 
   private key(k: string): string {
     return this.prefix ? `${this.prefix}.${k}` : k
@@ -22,8 +33,10 @@ export class LocalStorageAdapter implements StorageAdapter {
     if (typeof localStorage === 'undefined') return
     try {
       localStorage.setItem(this.key(key), JSON.stringify(value))
-    } catch {
-      // QuotaExceededError — best-effort
+    } catch (error) {
+      if (this.onError) {
+        this.onError(error)
+      }
     }
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "@aetherAssembly/ui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "author": {
     "name": "AetherAssembly",
@@ -34,9 +34,6 @@
   "scripts": {
     "build": "tsc --build",
     "clean": "rm -rf dist .tsbuildinfo"
-  },
-  "dependencies": {
-    "@aetherAssembly/core": "*"
   },
   "peerDependencies": {
     "react": "^19.0.0",

@@ -23,7 +23,7 @@ Then install:
 
 ```sh
 npm install @aetherAssembly/core
-npm install @aetherAssembly/ui   # React apps only
+npm install @aetherAssembly/ui   # React 19 apps only — peer dep: react@^19
 ```
 
 > **Auth:** GitHub Packages requires a personal access token with `read:packages` scope set as `NODE_AUTH_TOKEN`, even for public packages. Add it to your shell profile or CI secrets.
@@ -128,7 +128,7 @@ interface WardrobeItem extends BaseEntity {
 
 ---
 
-## `@aetherAssembly/ui`
+## `@aetherAssembly/ui
 
 React 19 components. Styled with `--ae-*` CSS custom properties so each app can map its own palette in.
 
@@ -136,49 +136,29 @@ React 19 components. Styled with `--ae-*` CSS custom properties so each app can 
 import { Button, Card, Badge, Input, Modal } from '@aetherAssembly/ui'
 ```
 
+### Setup
+
+Import the stylesheet once at your app's entry point:
+
+```ts
+import 'aetherassembly/ui/sheet.css'
+```
+
 ### Theming
 
-The package ships default token values in [`src/styles.css`](./packages/ui/src/styles.css). Override them in your app:
+The package ships default token values in [`src/styles.css`](./packages/ui/src/styles.css). Override any of these in your app:
 
-```css
-:root {
-  --ae-color-primary:       #C9A96E;
-  --ae-color-primary-hover: #A07C45;
-  --ae-color-bg:            #FFFFFF;
-  --ae-color-text:          #2A2118;
-  --ae-color-border:        #D4C8B5;
-  /* ... */
-}
-```
-
-Attyre maps its warm-palette variables directly:
-
-```css
-/* Attyre — style.css */
-:root {
-  --ae-color-primary:       var(--gold);
-  --ae-color-primary-hover: var(--gold-dark);
-  --ae-color-text:          var(--ink);
-  --ae-color-border:        var(--stone-dark);
-}
-```
-
-Before It's Gone imports components via its local `@before-its-gone/ui` package (which wraps `@aetherAssembly/ui`):
-
-```tsx
-// Before It's Gone — packages/ui/src/InventoryCard.tsx
-import { Badge } from '@aetherAssembly/ui'
-
-export function InventoryCard({ item }) {
-  return (
-    <div>
-      <Badge variant="warning">{item.daysLeft}d left</Badge>
-    </div>
-  )
-}
-```
+| Group | Prefix | Examples |
+| - | - | - |
+| Colors | `--ae-color-*` | `--ae-color-primary`, `--ae-color-bg`, `--ae-color-text` |
+| Spacing | `--ae-space-*` | `--ae-space-1` through `--ae-space-8` |
+| Typography | `--ae-font-*` | `--ae-font-sans`, `--ae-font-size-sm`, `--ae-line-height-normal` |
+| Radius | `--ae-radius-*` | `--ae-radius-sm`, `--ae-radius-md`, `--ae-radius-full` |
+| Shadows | `--ae-shadow-*` | `--ae-shadow-sm`, `--ae-shadow-md`, `--ae-shadow-lg` |
 
 ### Components
+
+All components accept a 'className' prop for layerign additional styles on top of the token 
 
 **`Button`**
 
@@ -225,11 +205,14 @@ Generates an `id` from the label automatically. `error` sets `aria-invalid` and 
 
 Wraps the native `<dialog>` element with `showModal()` / `close()`.
 
+>**Note** When 'title' is omitted, no close button is rendered. In that case the only built-in dismiss is clicking the backdrop
+> make sure your 'onClose' handler accounts for that.
+
 ---
 
 ## How the ecosystem fits together
 
-```
+```bash
 aether-packages/
   packages/core      →  @aetherAssembly/core  (published to GHPR)
   packages/ui        →  @aetherAssembly/ui    (published to GHPR)
@@ -262,7 +245,7 @@ npm run clean     # remove dist/ and .tsbuildinfo
 
 ### Repo layout
 
-```
+```bash
 packages/
   core/
     src/
@@ -277,11 +260,10 @@ tsconfig.base.json
 .npmrc            # routes @aetherAssembly to GHPR
 ```
 
-### Publishing
+## Changelog
 
-Packages publish automatically when a `v*` tag is pushed. The workflow runs build → test → `npm publish --workspaces`:
+See [CHANGELOG.md](./CHANGELOG.md) for release history.
 
-```sh
-git tag v1.0.1
-git push origin v1.0.1
-```
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines and how to open a PR.

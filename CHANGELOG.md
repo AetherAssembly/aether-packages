@@ -5,6 +5,22 @@ All notable changes to aether-packages will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-06-25
+
+### Added
+
+- **`@aetherAssembly/core`:** `LocalStorageAdapter` now accepts an `onError` callback via its second constructor argument (`options.onError`). Called with the caught error when `localStorage.setItem` throws (e.g. `QuotaExceededError`); previously the error was silently swallowed with no way for callers to detect it.
+- **`@aetherAssembly/core`:** Tests for `LocalStorageAdapter` covering CRUD, prefix scoping, SSR no-op behavior, and the `onError` callback. All 22 tests pass.
+
+### Fixed
+
+- **`@aetherAssembly/core`:** `IDBAdapter` now throws a clear error at construction time when `indexedDB` is not available (Node.js / SSR), rather than propagating an opaque failure from the `idb` library later.
+- **`@aetherAssembly/ui`:** Removed unused `@aetherAssembly/core` dependency — none of the UI components import from it.
+
+### Changed
+
+- Updated README: added CSS import instruction, peer dependency note, full token group table, `className` prop mention, `Modal` title-less close note, and links to `CHANGELOG.md` and `CONTRIBUTING.md`.
+
 ## [1.0.0] - 2026-06-19
 
 ### Added

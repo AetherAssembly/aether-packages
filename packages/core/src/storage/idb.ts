@@ -8,6 +8,11 @@ export class IDBAdapter implements StorageAdapter {
     private readonly dbName: string,
     private readonly storeName: string,
   ) {
+    if (typeof indexedDB === 'undefined') {
+      throw new Error(
+        'IDBAdapter requires IndexedDB, which is not available in this environment (Node.js / SSR). Use MemoryAdapter for tests or LocalStorageAdapter for server-side persistence.',
+      )
+    }
     this.dbPromise = openDB(dbName, 1, {
       upgrade(db) {
         if (!db.objectStoreNames.contains(storeName)) {
