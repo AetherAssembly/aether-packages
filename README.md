@@ -62,20 +62,6 @@ await storage.delete('theme')
 await storage.clear()
 ```
 
-**Attyre** uses this to store its entire wardrobe in IndexedDB:
-
-```js
-// Attyre — js/store.js
-import { IDBAdapter } from '@aetherAssembly/core'
-
-const adapter = new IDBAdapter('attyre', 'items')
-
-export async function getItems() {
-  const keys = await adapter.keys()
-  return Promise.all(keys.map(k => adapter.get(k)))
-}
-```
-
 **Before It's Gone** uses it through a typed schema built directly with `idb`, but re-exports `LocalStorageAdapter` from this package for settings storage:
 
 ```ts

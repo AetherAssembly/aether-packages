@@ -53,22 +53,6 @@ The constructor immediately begins opening the database and stores the resulting
 
 The database is opened at version 1. If you need multiple object stores, create separate `IDBAdapter` instances (one per store) or build a custom `openDB` schema directly with `idb` and use `IDBAdapter` only for the generic stores.
 
-**Use in Attyre:**
-
-```js
-const adapter = new IDBAdapter('attyre', 'items')
-
-export async function getItems() {
-  const keys = await adapter.keys()
-  return Promise.all(keys.map(k => adapter.get(k)))
-}
-
-export async function saveItems(items) {
-  await adapter.clear()
-  await Promise.all(items.map(item => adapter.set(item.id, item)))
-}
-```
-
 ---
 
 ## `LocalStorageAdapter`

@@ -98,7 +98,7 @@ All visual styling in every component references these tokens. Override any of t
 
 Override tokens in your app's `:root` block. You only need to set the tokens you want to change — everything else falls back to the defaults from `styles.css`.
 
-**Example — mapping Attyre's warm palette:**
+**Example — mapping a warm palette:**
 
 ```css
 :root {

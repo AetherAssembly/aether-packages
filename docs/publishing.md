@@ -31,7 +31,7 @@ Packages are versioned independently — bumping `@aetherAssembly/core` does not
 | New export, new optional prop, new adapter | Minor (`1.0.0` → `1.1.0`) |
 | Removed export, renamed prop, breaking interface change | Major (`1.0.0` → `2.0.0`) |
 
-Because downstream apps (`Before It's Gone`, `Attyre`) pin to `^1.0.0`, a major bump requires manually updating their `package.json` and migrating any breaking call sites before cutting the release.
+Because downstream apps (e.g. `Before It's Gone`) pin to `^1.0.0`, a major bump requires manually updating their `package.json` and migrating any breaking call sites before cutting the release.
 
 ---
 
