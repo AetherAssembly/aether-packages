@@ -7,7 +7,7 @@ Shared packages for the AetherAssembly ecosystem, published to the GitHub Packag
 | [`@aetherAssembly/core`](./packages/core) | Storage adapters and shared TypeScript types |
 | [`@aetherAssembly/ui`](./packages/ui) | React 19 component library |
 
-Consumed by [Before It's Gone](https://github.com/AetherAssembly/Before-Its-Gone) and [Attyre](https://github.com/AetherAssembly/Attyre).
+Consumed by [Before It's Gone](https://github.com/AetherAssembly/Before-Its-Gone).
 
 ---
 
