@@ -5,6 +5,33 @@ All notable changes to aether-packages will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-08-29
+
+### Fixed
+
+- **`@aetherAssembly/ui`:** `styles.css` previously shipped only `--ae-*` design
+  token declarations with no actual component rules — every `Button`, `Card`,
+  `Modal`, `Input`, and `Badge` rendered as unstyled HTML in any app consuming
+  the package. Added the missing component CSS (variants, sizes, hover/focus/
+  disabled states, the `Button` loading spinner, and the native `<dialog>`
+  backdrop for `Modal`), built from the existing tokens.
+- **Toolchain:** downgraded root `typescript` from `^7.0.2` to `^6.0.3`.
+  `@typescript-eslint/eslint-plugin`/`parser` (`^8.67.0`, currently no release
+  supports TS 7 as a peer — latest is `8.68.0`, still capped at `typescript
+  <6.1.0`) made `npm ci` fail with an unresolvable `ERESOLVE` peer conflict on
+  every install, which had been silently failing CI on `main` and every open
+  dependency PR since TypeScript was bumped to 7.x.
+
+## [1.0.2] - 2026-07-20
+
+### Changed
+
+- Bumped devDependencies: `@typescript-eslint/eslint-plugin`/`parser` to
+  `^8.64.0`, `eslint` to `^10.7.0`, `prettier` to `^3.9.5`, `vitest` and
+  `@vitest/coverage-v8` to `^4.1.10`.
+- Bumped `@aetherAssembly/core` and `@aetherAssembly/ui` from `1.0.1` to
+  `1.0.2` (no functional changes to either package).
+
 ## [1.0.1] - 2026-06-25
 
 ### Added
