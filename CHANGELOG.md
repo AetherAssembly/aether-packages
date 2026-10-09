@@ -5,6 +5,19 @@ All notable changes to aether-packages will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-10-08
+
+### Changed
+
+- Bumped `@aetherAssembly/core` and `@aetherAssembly/ui` from `1.0.3` to
+  `1.0.4` for the scheduled package release.
+- Updated repo-level dev tooling to current compatible versions:
+  `@typescript-eslint/eslint-plugin` and `@typescript-eslint/parser` to
+  `^8.70.0`, `eslint` to `^10.8.1`, `prettier` to `^3.9.6`, and
+  `vitest` / `@vitest/coverage-v8` to `^4.1.11`.
+- Kept the published package versions aligned with the monorepo release
+  metadata and changelog.
+
 ## [1.0.3] - 2026-08-29
 
 ### Fixed
