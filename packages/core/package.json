@@ -36,6 +36,6 @@
     "clean": "rm -rf dist .tsbuildinfo"
   },
   "dependencies": {
-    "idb": "^8.0.3"
+    "idb": "^8.0.4"
   }
 }
