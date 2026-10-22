@@ -7,7 +7,7 @@ Shared packages for the AetherAssembly ecosystem, published to the GitHub Packag
 | [`@aetherAssembly/core`](./packages/core) | Storage adapters and shared TypeScript types |
 | [`@aetherAssembly/ui`](./packages/ui) | React 19 component library |
 
-Consumed by [Before It's Gone](https://github.com/AetherAssembly/Before-Its-Gone).
+Consumed by [Driftleaf](https://github.com/AetherAssembly/Driftleaf).
 
 ---
 
@@ -62,19 +62,6 @@ await storage.delete('theme')
 await storage.clear()
 ```
 
-**Before It's Gone** uses it through a typed schema built directly with `idb`, but re-exports `LocalStorageAdapter` from this package for settings storage:
-
-```ts
-// Before It's Gone — packages/core/src/storage.ts
-import { LocalStorageAdapter, type StorageAdapter } from '@aetherAssembly/core'
-
-export type { StorageAdapter as KeyValueStorage }
-export { LocalStorageAdapter }
-export function createLocalStorageAdapter() {
-  return new LocalStorageAdapter()
-}
-```
-
 #### `LocalStorageAdapter` — localStorage
 
 Async wrapper around `localStorage`. Gracefully no-ops when `localStorage` is unavailable (SSR, Web Workers). An optional prefix scopes all keys — `clear()` and `keys()` only touch keys within that prefix.
@@ -114,7 +101,7 @@ interface WardrobeItem extends BaseEntity {
 
 ---
 
-## `@aetherAssembly/ui
+## `@aetherAssembly/ui`
 
 React 19 components. Styled with `--ae-*` CSS custom properties so each app can map its own palette in.
 
@@ -127,7 +114,7 @@ import { Button, Card, Badge, Input, Modal } from '@aetherAssembly/ui'
 Import the stylesheet once at your app's entry point:
 
 ```ts
-import 'aetherassembly/ui/sheet.css'
+import '@aetherAssembly/ui/styles.css'
 ```
 
 ### Theming
@@ -144,7 +131,7 @@ The package ships default token values in [`src/styles.css`](./packages/ui/src/s
 
 ### Components
 
-All components accept a 'className' prop for layerign additional styles on top of the token 
+All components accept a `className` prop for layering additional styles on top of the token defaults.
 
 **`Button`**
 
@@ -167,8 +154,8 @@ All components accept a 'className' prop for layerign additional styles on top o
 **`Badge`**
 
 ```tsx
-<Badge variant="success">Fresh</Badge>
-<Badge variant="danger">Expired</Badge>
+<Badge variant="success">Synced</Badge>
+<Badge variant="danger">Error</Badge>
 ```
 
 `variant`: `default | success | warning | danger | info`
@@ -176,7 +163,7 @@ All components accept a 'className' prop for layerign additional styles on top o
 **`Input`**
 
 ```tsx
-<Input label="City" error={errors.city} hint="e.g. Tokyo Japan" />
+<Input label="Vault name" error={errors.vaultName} hint="e.g. Personal" />
 ```
 
 Generates an `id` from the label automatically. `error` sets `aria-invalid` and renders below the field. `hint` renders as muted helper text.
@@ -191,8 +178,7 @@ Generates an `id` from the label automatically. `error` sets `aria-invalid` and 
 
 Wraps the native `<dialog>` element with `showModal()` / `close()`.
 
->**Note** When 'title' is omitted, no close button is rendered. In that case the only built-in dismiss is clicking the backdrop
-> make sure your 'onClose' handler accounts for that.
+> **Note** When `title` is omitted, no close button is rendered. In that case the only built-in dismiss is clicking the backdrop — make sure your `onClose` handler accounts for that.
 
 ---
 
@@ -203,19 +189,10 @@ aether-packages/
   packages/core      →  @aetherAssembly/core  (published to GHPR)
   packages/ui        →  @aetherAssembly/ui    (published to GHPR)
 
-Before-Its-Gone/
-  packages/core      →  @before-its-gone/core  (local workspace)
-    └─ re-exports LocalStorageAdapter from @aetherAssembly/core
-    └─ uses idb directly for its typed inventory/history/wastelog schema
-  packages/ui        →  @before-its-gone/ui    (local workspace)
-    └─ uses @aetherAssembly/ui components (Badge, etc.)
-  apps/web           →  consumes @before-its-gone/core + ui
-
-Attyre/
-  js/store.js        →  imports IDBAdapter from @aetherAssembly/core directly
+Driftleaf/
+  src/renderer       →  uses @aetherAssembly/ui components (Button, Card, Badge, Input, Modal)
+                         imports @aetherAssembly/ui/styles.css once at entry point
 ```
-
-BIG's local packages are named `@before-its-gone/*` (not `@aetherAssembly/*`) to avoid collision with the published shared packages, which are also installed at the root.
 
 ---
 
