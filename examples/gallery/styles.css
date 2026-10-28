@@ -1,0 +1,7 @@
+body { margin: 0; font-family: system-ui, sans-serif; }
+.gallery { padding: 2rem; min-height: 100vh; box-sizing: border-box; background: var(--ae-color-bg); color: var(--ae-color-text); display: grid; gap: 1.5rem; }
+.gallery > * { max-width: 60rem; width: 100%; margin-inline: auto; }
+.gallery > button { width: auto; }
+.row { display: flex; flex-wrap: wrap; gap: .75rem; margin-block: 1rem; }
+.ae-card__body { display: grid; gap: 1rem; }
+.dark { --ae-color-bg: #111827; --ae-color-surface: #1f2937; --ae-color-text: #f9fafb; --ae-color-text-muted: #d1d5db; --ae-color-border: #4b5563; }

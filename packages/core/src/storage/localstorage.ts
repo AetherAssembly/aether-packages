@@ -1,71 +1,74 @@
 import type { StorageAdapter } from './adapter.js'
 
-type LocalStorageAdapterOptions = {
+export type LocalStorageAdapterOptions = {
   onError?: (error: unknown) => void
+  /** Explicitly opt into best-effort storage, including unavailable environments. */
+  errorMode?: 'throw' | 'ignore'
 }
 
 export class LocalStorageAdapter implements StorageAdapter {
-  private readonly onError: ((error: unknown) => void) | undefined
-
   constructor(
     private readonly prefix = '',
-    options: LocalStorageAdapterOptions = {},
-  ) {
-    this.onError = options.onError
+    private readonly options: LocalStorageAdapterOptions = {},
+  ) {}
+
+  private key(key: string): string {
+    return this.prefix ? `${this.prefix}.${key}` : key
   }
 
-  private key(k: string): string {
-    return this.prefix ? `${this.prefix}.${k}` : k
+  private run<T>(operation: (storage: Storage) => T, fallback: T): T {
+    try {
+      if (typeof localStorage === 'undefined')
+        throw new Error(
+          'localStorage is unavailable. Use MemoryAdapter for non-persistent storage.',
+        )
+      return operation(localStorage)
+    } catch (error) {
+      this.options.onError?.(error)
+      if (this.options.errorMode !== 'ignore') throw error
+      return fallback
+    }
   }
 
   async get<T>(key: string): Promise<T | null> {
-    if (typeof localStorage === 'undefined') return null
-    const raw = localStorage.getItem(this.key(key))
-    if (raw === null) return null
-    try {
-      return JSON.parse(raw) as T
-    } catch {
-      return null
-    }
+    return this.run((storage) => {
+      const raw = storage.getItem(this.key(key))
+      return raw === null ? null : (JSON.parse(raw) as T)
+    }, null)
   }
 
   async set<T>(key: string, value: T): Promise<void> {
-    if (typeof localStorage === 'undefined') return
-    try {
-      localStorage.setItem(this.key(key), JSON.stringify(value))
-    } catch (error) {
-      if (this.onError) {
-        this.onError(error)
-      }
-    }
+    this.run((storage) => {
+      const serialized = JSON.stringify(value)
+      if (serialized === undefined)
+        throw new TypeError('Value is not JSON serializable')
+      storage.setItem(this.key(key), serialized)
+    }, undefined)
   }
 
   async delete(key: string): Promise<void> {
-    if (typeof localStorage === 'undefined') return
-    localStorage.removeItem(this.key(key))
+    this.run((storage) => storage.removeItem(this.key(key)), undefined)
   }
 
   async clear(): Promise<void> {
-    if (typeof localStorage === 'undefined') return
-    for (const k of await this.keys()) {
-      localStorage.removeItem(this.key(k))
+    this.run((storage) => {
+      for (const key of this.listKeys(storage))
+        storage.removeItem(this.key(key))
+    }, undefined)
+  }
+
+  private listKeys(storage: Storage): string[] {
+    const prefix = this.prefix ? `${this.prefix}.` : ''
+    const keys: string[] = []
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i)
+      if (key !== null && key.startsWith(prefix))
+        keys.push(key.slice(prefix.length))
     }
+    return keys
   }
 
   async keys(): Promise<string[]> {
-    if (typeof localStorage === 'undefined') return []
-    const prefixDot = this.prefix ? `${this.prefix}.` : ''
-    const result: string[] = []
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i)
-      if (k !== null) {
-        if (prefixDot) {
-          if (k.startsWith(prefixDot)) result.push(k.slice(prefixDot.length))
-        } else {
-          result.push(k)
-        }
-      }
-    }
-    return result
+    return this.run((storage) => this.listKeys(storage), [])
   }
 }
