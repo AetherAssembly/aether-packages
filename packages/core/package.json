@@ -1,6 +1,6 @@
 {
   "name": "@aetherAssembly/core",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "author": {
     "name": "AetherAssembly",
@@ -14,7 +14,7 @@
       "url": "https://github.com/Aster1630"
     }
   ],
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -24,7 +24,9 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
@@ -33,7 +35,8 @@
     "build": "tsc --build",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "clean": "rm -rf dist .tsbuildinfo"
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "typecheck": "tsc -p tsconfig.test.json"
   },
   "dependencies": {
     "idb": "^8.0.4"

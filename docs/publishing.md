@@ -61,7 +61,7 @@ git commit -m "chore(core): release v1.0.1"
 
 ### 4. Tag and push
 
-The tag format is `v<version>`. If you're releasing only one package, use a package-scoped tag to make it clear:
+The tag format is `v<version>`. Package-scoped tags are labels only and do not trigger publishing:
 
 ```sh
 git tag core-v1.0.1
@@ -75,7 +75,7 @@ git tag v1.1.0
 git push origin v1.1.0
 ```
 
-Both formats match the `v*` trigger in the publish workflow.
+Only plain `v*` tags currently trigger publishing, and the workflow publishes both workspaces. Package-scoped tags do not trigger it; use a plain tag with both versions prepared.
 
 ### 5. Verify
 
@@ -106,3 +106,9 @@ CI pipelines that install these packages need `NODE_AUTH_TOKEN` set as a secret 
 The workflow will pick it up automatically on the next tag push.
 
 To exclude a package from publishing (e.g. an internal tooling package), add `"private": true` to its `package.json`.
+
+## Release readiness
+
+Run lint, no-emit typechecks, build, unit tests, packed-consumer checks, and browser tests before publishing. The publish workflow repeats the release checks. `npm run test:packages` builds a temporary consumer from npm tarballs, checks exported declarations under NodeNext, exercises ESM/SSR imports and styles, and confirms README/LICENSE files are included. It uses installed runtime dependencies/peers and does not test registry authentication.
+
+The unreleased storage error policy, Input styling/IDs, default Button type, and Modal notifications require a major release. Versions have intentionally not been bumped automatically. Confirm rights to relicense all contributions under MIT before publishing. Existing AGPL release artifacts and third-party dependencies keep their own licenses.

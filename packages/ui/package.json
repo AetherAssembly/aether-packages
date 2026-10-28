@@ -1,6 +1,6 @@
 {
   "name": "@aetherAssembly/ui",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "author": {
     "name": "AetherAssembly",
@@ -14,7 +14,7 @@
       "url": "https://github.com/Aster1630"
     }
   ],
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -26,17 +26,24 @@
   },
   "files": [
     "dist",
-    "src/styles.css"
+    "src/styles.css",
+    "LICENSE",
+    "README.md"
   ],
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "build": "tsc --build",
-    "clean": "rm -rf dist .tsbuildinfo"
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
-  }
+  },
+  "sideEffects": [
+    "**/*.css"
+  ]
 }

@@ -2,7 +2,7 @@
 
 ## Setup
 
-You'll need Node.js 22+ and a GitHub personal access token with `read:packages` scope to install dependencies (GitHub Packages requires auth even for public packages).
+You'll need Node.js 22.22.2+, 24.15+, or 26+ and a GitHub personal access token with `read:packages` scope to install dependencies (GitHub Packages requires auth even for public packages).
 
 Add your token to `~/.npmrc`:
 
@@ -57,7 +57,7 @@ Each package is an independent npm workspace. They share `tsconfig.base.json` bu
 {
   "name": "@aetherAssembly/<name>",
   "version": "1.0.0",
-  "license": "AGPL-3.0-only",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

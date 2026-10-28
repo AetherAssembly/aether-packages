@@ -3,7 +3,7 @@
 Shared packages for the AetherAssembly ecosystem, published to the GitHub Package Registry under `@aetherAssembly`.
 
 | Package | Description |
-|---|---|
+| - | - |
 | [`@aetherAssembly/core`](./packages/core) | Storage adapters and shared TypeScript types |
 | [`@aetherAssembly/ui`](./packages/ui) | React 19 component library |
 
@@ -15,7 +15,7 @@ Consumed by [Driftleaf](https://github.com/AetherAssembly/Driftleaf).
 
 Add to your project's `.npmrc` to route the scope to GitHub Packages:
 
-```
+```ini
 @aetherAssembly:registry=https://npm.pkg.github.com
 ```
 
@@ -64,7 +64,7 @@ await storage.clear()
 
 #### `LocalStorageAdapter` — localStorage
 
-Async wrapper around `localStorage`. Gracefully no-ops when `localStorage` is unavailable (SSR, Web Workers). An optional prefix scopes all keys — `clear()` and `keys()` only touch keys within that prefix.
+Async wrapper around `localStorage`. Rejects failures by default, including unavailable storage. Pass `{ errorMode: 'ignore' }` as the second constructor argument to opt into best-effort behavior. An optional prefix scopes all keys — `clear()` and `keys()` only touch keys within that prefix.
 
 ```ts
 import { LocalStorageAdapter } from '@aetherAssembly/core'
@@ -166,7 +166,7 @@ All components accept a `className` prop for layering additional styles on top o
 <Input label="Vault name" error={errors.vaultName} hint="e.g. Personal" />
 ```
 
-Generates an `id` from the label automatically. `error` sets `aria-invalid` and renders below the field. `hint` renders as muted helper text.
+Generates a unique React ID automatically. `error` sets `aria-invalid` and renders below the field. `hint` renders as muted helper text.
 
 **`Modal`**
 
@@ -178,7 +178,7 @@ Generates an `id` from the label automatically. `error` sets `aria-invalid` and 
 
 Wraps the native `<dialog>` element with `showModal()` / `close()`.
 
-> **Note** When `title` is omitted, no close button is rendered. In that case the only built-in dismiss is clicking the backdrop — make sure your `onClose` handler accounts for that.
+> The close button is always available. Supply a title or a meaningful `aria-label`. `onClose` requests dismissal; update `open` in the handler.
 
 ---
 
@@ -230,3 +230,17 @@ See [CHANGELOG.md](./CHANGELOG.md) for release history.
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines and how to open a PR.
+
+## Forms and component gallery
+
+Textarea, Select, Checkbox, and Field are also exported, alongside public component prop and variant types. Run `npm run gallery` for interactive examples, theme overrides, and keyboard instructions. See [UI documentation](docs/ui-components.md) and [storage documentation](docs/storage.md) for API details and migration notes.
+
+## Verification
+
+`npm run lint`, `npm run typecheck` (no output), `npm test`, `npm run build`, `npm run test:packages` (packed consumer checks), and `npm run test:browser` (native Chromium behavior). Install the browser once with `npx playwright install chromium`. Clean removes build output and incremental caches.
+
+## License and optional attribution
+
+Licensed under [MIT](LICENSE). Please consider crediting "Powered by AetherAssembly" with a link to https://github.com/AetherAssembly/aether-packages in your About/Credits page or documentation. Public credit is appreciated, not required. MIT's copyright and permission notice requirements still apply.
+
+The license change applies to this source revision and future releases; existing AGPL releases retain their published terms. Before publishing a relicensed release, maintainers must confirm that all included contributions can be offered under MIT.

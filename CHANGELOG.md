@@ -5,6 +5,51 @@ All notable changes to aether-packages will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-10-27
+
+### Added
+
+- **`@aetherAssembly/core`:** IndexedDB schema versions, multiple-store
+  declarations, upgrade lifecycle callbacks, and connection closing.
+- **`@aetherAssembly/ui`:** `Field`, `Textarea`, `Select`, and `Checkbox`
+  components, public prop and variant types, and refs for form controls.
+- **Testing:** shared adapter contract and failure tests, component interaction
+  tests, native Chromium dialog tests, and packed-package consumer verification.
+- **Documentation:** interactive component gallery, package-specific READMEs,
+  and migration guidance for the storage and UI changes.
+- **CI workflows:** lint, packed-package verification, and browser checks before
+  merging or publishing.
+
+### Fixed
+
+- **`@aetherAssembly/core`:** missing IndexedDB stores now produce an actionable
+  error; schema upgrades can create multiple stores while retaining existing data.
+  Older adapter connections close automatically when an upgrade is requested.
+- **`@aetherAssembly/ui`:** loading buttons remain disabled when callers pass
+  `disabled={false}`. Input IDs are unique, helper references point only to
+  rendered messages, and caller accessibility attributes are preserved.
+- **`@aetherAssembly/ui`:** modal titles now provide accessible dialog names,
+  untitled dialogs retain a close button, and dismissal notifications are
+  delivered once per open cycle. Added control focus and reduced-motion styles.
+- **Toolchain:** clean scripts remove the actual incremental cache files, and
+  typechecking checks source and tests without emitting build output.
+
+### Changed
+
+- **`@aetherAssembly/core` (breaking):** localStorage failures reject by default.
+  Pass `errorMode: 'ignore'` to opt into best-effort behavior; `onError` observes
+  failures in either mode.
+- **`@aetherAssembly/ui` (breaking):** `Input` IDs use React `useId()` instead of
+  labels. `className` styles the input; use `wrapperClassName` for its wrapper.
+- **`@aetherAssembly/ui` (breaking):** `Button` defaults to `type="button"`;
+  specify `type="submit"` for form submission. `Modal.onClose` requests user
+  dismissal; prop-driven closing no longer invokes it.
+- **Licensing:** switched this source revision to MIT with optional public
+  attribution and included license files in both packages. Prior releases retain
+  their published terms.
+- **Toolchain:** updated development dependencies to patched releases and added
+  explicit gallery, component-testing, and browser-testing dependencies.
+
 ## [1.0.4] - 2026-10-08
 
 ### Changed
