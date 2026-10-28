@@ -1,56 +1,92 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ComponentPropsWithoutRef } from 'react'
 
-type ModalProps = {
+export type ModalProps = Omit<
+  ComponentPropsWithoutRef<'dialog'>,
+  'open' | 'onClose' | 'title'
+> & {
   open: boolean
+  /** Requests that the owner set open=false. Prop-driven closing does not notify. */
   onClose: () => void
   title?: string
-  children: ReactNode
-  className?: string
 }
 
-export function Modal({ open, onClose, title, children, className = '' }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  className = '',
+  'aria-label': ariaLabel,
+  'aria-labelledby': labelledBy,
+  onCancel,
+  onClick,
+  ...props
+}: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-
+  const titleId = useId()
+  const requested = useRef(false)
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
-    if (open && !dialog.open) {
-      dialog.showModal()
-    } else if (!open && dialog.open) {
-      dialog.close()
-    }
+    requested.current = false
+    if (open && !dialog.open) dialog.showModal()
+    else if (!open && dialog.open) dialog.close()
   }, [open])
-
-  useEffect(() => {
-    const dialog = dialogRef.current
-    if (!dialog) return
-    const handleClose = () => onClose()
-    dialog.addEventListener('close', handleClose)
-    return () => dialog.removeEventListener('close', handleClose)
-  }, [onClose])
-
+  const requestClose = () => {
+    if (!requested.current) {
+      requested.current = true
+      onClose()
+    }
+  }
   return (
     <dialog
+      {...props}
       ref={dialogRef}
       className={`ae-modal${className ? ` ${className}` : ''}`}
-      onClick={(e) => {
-        if (e.target === dialogRef.current) onClose()
+      aria-label={ariaLabel ?? (!title && !labelledBy ? 'Dialog' : undefined)}
+      aria-labelledby={
+        labelledBy ?? (title && !ariaLabel ? titleId : undefined)
+      }
+      onCancel={(event) => {
+        onCancel?.(event)
+        if (!event.defaultPrevented) {
+          event.preventDefault()
+          requestClose()
+        }
+      }}
+      onClose={() => {
+        if (open) requestClose()
+      }}
+      onClick={(event) => {
+        onClick?.(event)
+        if (!event.defaultPrevented && event.target === dialogRef.current) {
+          const bounds = event.currentTarget.getBoundingClientRect()
+          if (
+            event.clientX < bounds.left ||
+            event.clientX > bounds.right ||
+            event.clientY < bounds.top ||
+            event.clientY > bounds.bottom
+          )
+            requestClose()
+        }
       }}
     >
       <div className="ae-modal__content">
-        {title ? (
-          <header className="ae-modal__header">
-            <h2 className="ae-modal__title">{title}</h2>
-            <button
-              type="button"
-              className="ae-modal__close"
-              onClick={onClose}
-              aria-label="Close"
-            >
-              ×
-            </button>
-          </header>
-        ) : null}
+        <header className="ae-modal__header">
+          {title ? (
+            <h2 id={titleId} className="ae-modal__title">
+              {title}
+            </h2>
+          ) : null}
+          <button
+            type="button"
+            className="ae-modal__close"
+            onClick={requestClose}
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </header>
         <div className="ae-modal__body">{children}</div>
       </div>
     </dialog>

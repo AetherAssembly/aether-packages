@@ -1,40 +1,41 @@
-import type { InputHTMLAttributes } from 'react'
+import type { ComponentPropsWithRef } from 'react'
+import { Field, type FieldProps } from './Field.js'
 
-type InputProps = InputHTMLAttributes<HTMLInputElement> & {
-  label?: string
-  error?: string
-  hint?: string
-}
+export type InputProps = ComponentPropsWithRef<'input'> &
+  Pick<FieldProps, 'label' | 'hint' | 'error'> & { wrapperClassName?: string }
 
-export function Input({ label, error, hint, id, className = '', ...props }: InputProps) {
-  const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined)
-
+export function Input({
+  label,
+  hint,
+  error,
+  id,
+  className = '',
+  wrapperClassName,
+  'aria-describedby': describedBy,
+  'aria-invalid': invalid,
+  ...props
+}: InputProps) {
   return (
-    <div className={`ae-input-group${error ? ' ae-input-group--error' : ''}${className ? ` ${className}` : ''}`}>
-      {label ? (
-        <label className="ae-input-group__label" htmlFor={inputId}>
-          {label}
-        </label>
-      ) : null}
-      <input
-        {...props}
-        id={inputId}
-        className="ae-input"
-        aria-describedby={
-          [error && `${inputId}-error`, hint && `${inputId}-hint`].filter(Boolean).join(' ') || undefined
-        }
-        aria-invalid={error ? true : undefined}
-      />
-      {error ? (
-        <p id={`${inputId}-error`} className="ae-input-group__error" role="alert">
-          {error}
-        </p>
-      ) : null}
-      {hint && !error ? (
-        <p id={`${inputId}-hint`} className="ae-input-group__hint">
-          {hint}
-        </p>
-      ) : null}
-    </div>
+    <Field
+      id={id}
+      label={label}
+      hint={hint}
+      error={error}
+      className={wrapperClassName}
+    >
+      {(attributes) => (
+        <input
+          {...props}
+          id={attributes.id}
+          className={`ae-input${className ? ` ${className}` : ''}`}
+          aria-describedby={
+            [describedBy, attributes['aria-describedby']]
+              .filter(Boolean)
+              .join(' ') || undefined
+          }
+          aria-invalid={error ? true : invalid}
+        />
+      )}
+    </Field>
   )
 }

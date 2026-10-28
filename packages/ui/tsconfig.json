@@ -4,9 +4,13 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "references": [
-    { "path": "../core" }
+  "include": [
+    "src"
   ],
-  "include": ["src"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/test-setup.ts",
+    "src/**/test-helpers.ts"
+  ]
 }

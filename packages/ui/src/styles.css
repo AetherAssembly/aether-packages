@@ -362,3 +362,12 @@
   background: color-mix(in srgb, var(--ae-color-info) 18%, white);
   color: color-mix(in srgb, var(--ae-color-info) 60%, black);
 }
+
+.ae-checkbox { accent-color: var(--ae-color-primary); width: var(--ae-space-4); height: var(--ae-space-4); }
+.ae-checkbox:focus-visible, .ae-modal__close:focus-visible { outline: 2px solid var(--ae-color-border-focus); outline-offset: 2px; }
+textarea.ae-input { min-height: 6rem; resize: vertical; }
+.ae-input:disabled, .ae-checkbox:disabled { opacity: 0.55; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  .ae-btn, .ae-input, .ae-modal__close { transition: none; }
+  .ae-btn__spinner { animation: none; }
+}

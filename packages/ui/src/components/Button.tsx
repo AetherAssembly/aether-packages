@@ -1,9 +1,9 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import type { ComponentPropsWithRef, ReactNode } from 'react'
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
-type ButtonSize = 'sm' | 'md' | 'lg'
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
+export type ButtonSize = 'sm' | 'md' | 'lg'
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+export type ButtonProps = ComponentPropsWithRef<'button'> & {
   variant?: ButtonVariant
   size?: ButtonSize
   loading?: boolean
@@ -15,6 +15,7 @@ export function Button({
   size = 'md',
   loading = false,
   disabled,
+  type = 'button',
   children,
   className = '',
   ...props
@@ -23,7 +24,8 @@ export function Button({
     <button
       {...props}
       className={`ae-btn ae-btn--${variant} ae-btn--${size}${className ? ` ${className}` : ''}`}
-      disabled={disabled ?? loading}
+      type={type}
+      disabled={disabled || loading}
       aria-busy={loading || undefined}
     >
       {loading ? <span className="ae-btn__spinner" aria-hidden="true" /> : null}
