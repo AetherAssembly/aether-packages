@@ -46,6 +46,6 @@ jobs:
         run: npm run test:browser
 
       - name: Publish
-        run: npm publish --workspaces --access public
+        run: node scripts/publish-if-new.mjs
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
