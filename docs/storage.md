@@ -1,48 +1,105 @@
-# Storage
+# Choose and use a storage adapter
 
-All adapters implement the async `StorageAdapter` interface: `get<T>(key)`, `set<T>(key, value)`, `delete(key)`, `clear()`, and `keys()`. Missing values return `null`. Deleting missing keys succeeds. Keys are unprefixed strings, ordering is unspecified, and clearing is scoped to the selected store/prefix (an empty localStorage prefix owns the entire storage area). `get<T>` is a type assertion, not runtime validation.
+Use the adapter that matches your app's environment and data lifetime:
 
-## Portable values and mutation
+| Adapter               | Choose it when                                                     | Persistence and value behavior                                |
+| --------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------- |
+| `IDBAdapter`          | A browser app needs persistent storage or structured-clone values  | IndexedDB persists data and supports browser-cloneable values |
+| `LocalStorageAdapter` | A browser app stores JSON-compatible values in localStorage        | Values are serialized as JSON                                 |
+| `MemoryAdapter`       | You need temporary state, server-side rendering, or a test adapter | Values live in an in-memory Map for the adapter's lifetime    |
 
-For interchangeable behavior, use plain JSON values: null, booleans, finite numbers, strings, arrays, and plain objects containing those values. Avoid undefined, functions, symbols, BigInt, cycles, custom classes, and non-finite numbers. Stored null and missing keys both read as null.
+All adapters share the same async `StorageAdapter` interface. You can change the backend without changing the calls your app makes.
 
-| Adapter | Value behavior | Persistence |
-| --- | --- | --- |
-| MemoryAdapter | Stores object references; mutating a stored or retrieved object changes the stored value | Instance lifetime |
-| LocalStorageAdapter | JSON serialization; retrieved objects are new copies. Dates become strings and unsupported nested values may be omitted or converted by JSON | Browser localStorage |
-| IDBAdapter | Structured clone; supports additional browser-cloneable values, independently of JSON | Browser IndexedDB |
+## What to expect from every adapter
 
-MemoryAdapter is useful for feature tests, but cannot substitute for backend tests involving serialization, errors, or persistence.
+The interface provides `get<T>(key)`, `set<T>(key, value)`, `delete(key)`, `clear()`, and `keys()`.
 
-## IndexedDB schema and lifecycle
+- A missing key returns `null`. Deleting a missing key succeeds.
+- Keys are returned without a prefix. Their order is unspecified.
+- `clear()` removes only data owned by the selected store or prefix. An empty localStorage prefix owns the entire origin's localStorage.
+- `get<T>` is a TypeScript assertion. It does not validate the stored value at runtime.
+- A stored `null` and a missing key both return `null`.
+
+For values that must work with all three adapters, use plain JSON data: `null`, booleans, finite numbers, strings, arrays, and plain objects containing those values. Avoid `undefined`, functions, symbols, `BigInt`, cycles, custom classes, and non-finite numbers.
+
+The adapters do not copy values in the same way:
+
+| Adapter               | What happens when you read or change an object                                                                                     |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `MemoryAdapter`       | Stores object references. Mutating a stored or retrieved object also changes the stored value.                                     |
+| `LocalStorageAdapter` | Serializes to JSON and returns newly parsed objects. Dates become strings, and JSON may omit or convert unsupported nested values. |
+| `IDBAdapter`          | Uses structured clone and supports additional browser-cloneable values that JSON does not.                                         |
+
+Use `MemoryAdapter` for feature tests, but test persistent adapters directly when serialization, errors, or persistence matter.
+
+## Set up IndexedDB
+
+Use one shared schema for every store in a database. Increase its version when you add a store:
 
 ```ts
 import { IDBAdapter, type IDBAdapterOptions } from '@aetherAssembly/core'
 
-const schema: IDBAdapterOptions = { version: 1, stores: ['items', 'settings'] }
+const schema: IDBAdapterOptions = {
+  version: 1,
+  stores: ['items', 'settings'],
+}
 const items = new IDBAdapter('my-app', 'items', schema)
 const settings = new IDBAdapter('my-app', 'settings', schema)
+
 await items.set('example', { name: 'Example' })
 await items.close()
 await settings.close()
 ```
 
-Declare all stores together. When adding stores, increase `version` and pass the same schema to every adapter using the database. Existing records and stores are retained. Opening a missing store without increasing the version produces an actionable error on operations. Older adapters automatically close when another connection requests an upgrade; create new adapters at the new version afterward. `close()` releases a connection and rejects subsequent operations. `onBlocked(currentVersion, requestedVersion)` reports other connections preventing an upgrade; `onTerminated()` reports abnormal termination. External connections must also close on version changes. Open and operation failures reject promises. IndexedDB is unavailable in Node.js/SSR; MemoryAdapter provides non-persistent storage there.
+Declare all stores together and pass the same schema to every adapter using that database. Increasing the version retains existing stores and records. If an adapter opens a store that has not been created at the current version, its operations reject with an actionable error.
 
-## localStorage errors and migration from 1.x
+The constructor starts opening the database immediately. If another connection requests an upgrade, older adapters close automatically; create new adapters with the new version afterward. Call `close()` when finished. Operations on a closed adapter reject.
+
+Use `onBlocked(currentVersion, requestedVersion)` to learn when other connections are preventing an upgrade. Use `onTerminated()` to respond to abnormal connection termination. Other connections to the database must also close when a version changes.
+
+Open and operation failures reject promises. IndexedDB is unavailable in Node.js and server-side rendering; use `MemoryAdapter` there when data does not need to persist.
+
+## Handle localStorage errors
+
+By default, localStorage failures reject, including unavailable or blocked storage, quota exhaustion, invalid JSON, and serialization errors. Catch failures where your app can tell the user that a save did not succeed:
 
 ```ts
 import { LocalStorageAdapter } from '@aetherAssembly/core'
+
 const storage = new LocalStorageAdapter('myapp', {
-  onError: error => console.error('Storage failed', error),
+  onError: (error) => console.error('Storage failed', error),
 })
-try { await storage.set('theme', 'dark') } catch { /* Show save failure */ }
+
+try {
+  await storage.set('theme', 'dark')
+} catch {
+  // Show a save failure or offer another action.
+}
 ```
 
-**Breaking change:** failures now reject by default, including unavailable storage, blocked access, quota exhaustion, invalid JSON, and serialization errors. `onError` observes failures and does not suppress them. To explicitly preserve best-effort behavior, use `{ errorMode: 'ignore' }`; failures still notify `onError`, while reads return null, keys return [], and writes/deletes/clear resolve. A throwing `onError` callback still rejects. A partially completed clear cannot be rolled back.
+`onError` observes a failure; it does not suppress it. To explicitly accept best-effort behavior, set `errorMode: 'ignore'`:
 
-Prefixes use `prefix.key`; choose disjoint prefixes (avoid nested prefixes such as `app` and `app.settings`). Without a prefix, clear removes all localStorage keys for the origin. No adapter provides cross-call transactions through the shared interface. For migration, copy and verify all records before clearing the source, and use a versioned completion marker. Prefer an IndexedDB transaction for migrations requiring atomicity.
+```ts
+const optionalCache = new LocalStorageAdapter('cache', {
+  errorMode: 'ignore',
+  onError: (error) => console.error('Cache unavailable', error),
+})
+```
 
-## Custom adapters
+In ignore mode, failed reads return `null`, failed `keys()` calls return `[]`, and failed writes, deletes, and clears resolve. A throwing `onError` callback still rejects. A partially completed clear cannot be rolled back.
 
-Export a class implementing `StorageAdapter`. Keep operations async, reject failures, return null for missing keys, and respect ownership boundaries in keys/clear. Run the same contract cases as the built-in adapters, plus backend-specific persistence and failure tests.
+## Keep localStorage keys separate
+
+Prefixes use the form `prefix.key`. A prefix limits `keys()` and `clear()` to keys owned by that adapter. Choose disjoint prefixes and avoid overlapping pairs such as `app` and `app.settings`.
+
+Without a prefix, `clear()` removes every localStorage key for the origin. Do not use an unprefixed adapter if the origin contains data owned by other parts of your app.
+
+## Migrate stored data safely
+
+The shared interface does not provide transactions across calls. When migrating records, copy and verify them before clearing the source. Store a versioned completion marker so the migration can be retried safely. If a migration must be atomic, prefer an IndexedDB transaction.
+
+## Add a custom adapter
+
+Export a class that implements `StorageAdapter`. Keep its operations async, reject backend failures, return `null` for missing keys, and make `keys()` and `clear()` respect the adapter's ownership boundary.
+
+Run the same contract tests used by the built-in adapters, then add tests for the backend's persistence, serialization, and failure behavior.

@@ -1,114 +1,98 @@
-# Publishing
+# Publish a package
 
-Both packages are published to the [GitHub Package Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry) under the `@aetherAssembly` scope. Publishing is fully automated — pushing a version tag triggers the workflow.
+Use this guide when releasing `@aetherAssembly/core` or `@aetherAssembly/ui`. A tag push starts the release workflow. The workflow checks each workspace's exact package version and publishes only versions that are not already in GitHub Packages.
 
----
+## What happens after a tag push
 
-## How the publish workflow works
+The [publish workflow](../.github/workflows/publish.yml) runs for tags matching `v*`. It checks out the repository, sets up Node.js with the GitHub Packages registry, installs dependencies, and runs these checks:
 
-`.github/workflows/publish.yml` runs on any tag matching `v*`:
+1. Typecheck and lint
+2. Build both packages
+3. Run unit tests
+4. Verify the packed packages in a temporary consumer project
+5. Run the browser tests
 
-1. Checks out the repo
-2. Sets up Node 22 with `registry-url: https://npm.pkg.github.com` and `scope: @aetherAssembly`
-3. Runs `npm ci`
-4. Runs `npm run build` (TypeScript composite build across all packages)
-5. Runs `npm test`
-6. Runs `npm publish --workspaces --access public`
+After the checks pass, `scripts/publish-if-new.mjs` reads each workspace's package name and version. It checks that exact version in `https://npm.pkg.github.com`. An existing version is skipped; a version that is not found is published. Authentication and the write permission come from the workflow's `GITHUB_TOKEN`. Do not add a token to the script or repository files.
 
-The `NODE_AUTH_TOKEN` is set to `${{ secrets.GITHUB_TOKEN }}`, which is provided automatically by GitHub Actions — no manual secret setup required for publishing.
+This means a release can update one package without trying to republish the other package's existing version. The tag starts the workflow; package versions in the manifests determine what is published.
 
-If build or tests fail, the publish step never runs.
+## Before you release
 
----
+Use semantic versioning for each package independently. Bumping `@aetherAssembly/core` does not require changing `@aetherAssembly/ui`.
 
-## Versioning strategy
+| Change                                                     | Suggested bump                    |
+| ---------------------------------------------------------- | --------------------------------- |
+| Bug fix without an API change                              | Patch, such as `1.0.0` to `1.0.1` |
+| New export, optional prop, or adapter                      | Minor, such as `1.0.0` to `1.1.0` |
+| Removed export, renamed prop, or breaking interface change | Major, such as `1.0.0` to `2.0.0` |
 
-Packages are versioned independently — bumping `@aetherAssembly/core` does not require bumping `@aetherAssembly/ui`. Use [semantic versioning](https://semver.org/):
+Before tagging:
 
-| Change | Version bump |
-| - | - |
-| Bug fix, no API change | Patch (`1.0.0` → `1.0.1`) |
-| New export, new optional prop, new adapter | Minor (`1.0.0` → `1.1.0`) |
-| Removed export, renamed prop, breaking interface change | Major (`1.0.0` → `2.0.0`) |
+1. Review the intended changes and identify which package versions need to change.
+2. Update the version field in each package's `package.json`. The manifest is the source of truth.
+3. Add a dated entry to `CHANGELOG.md` using its existing format.
+4. Run the release checks listed below and confirm they pass.
+5. Commit the release changes, then create and push a tag that starts with `v`.
 
-Because downstream apps (e.g. `Before It's Gone`) pin to `^1.0.0`, a major bump requires manually updating their `package.json` and migrating any breaking call sites before cutting the release.
-
----
-
-## Release process
-
-### 1. Bump the version
-
-Edit the relevant `package.json`:
+For example, if only core changed, update only `packages/core/package.json`, then use a tag such as `v1.0.6`. The workflow still checks both packages and skips any version already present in the registry.
 
 ```sh
-# for a patch release of core
-npm version patch --workspace packages/core
+git tag v1.0.6
+git push origin v1.0.6
 ```
 
-Or edit manually. The version in `package.json` is the source of truth.
+Tags such as `core-v1.0.6` do not start the workflow because they do not begin with `v`. A plain tag such as `v1.0.6` is also suitable when both packages have new versions ready.
 
-### 2. Update the changelog
+## Confirm the release
 
-Add an entry to `CHANGELOG.md` following the existing format. The date should be today's date in `YYYY-MM-DD`.
+Open the repository's [Actions page](https://github.com/AetherAssembly/aether-packages/actions) and check that the publish workflow completed successfully. Review its output to confirm which package versions were published or skipped. Then check the repository's Packages section to confirm the new versions are available.
 
-### 3. Commit
+If a check fails, fix the reported issue and start a new workflow with a new tag. A published version cannot be overwritten; increment that package's version for a later release.
 
-```sh
-git add packages/core/package.json CHANGELOG.md
-git commit -m "chore(core): release v1.0.1"
+## Install packages locally
+
+Consumers need a GitHub token with `read:packages` permission. Add the registry scope to the consuming project's `.npmrc`:
+
+```ini
+@aetherAssembly:registry=https://npm.pkg.github.com
 ```
 
-### 4. Tag and push
+Keep credentials in the user's `~/.npmrc`, not the project:
 
-The tag format is `v<version>`. Package-scoped tags are labels only and do not trigger publishing:
-
-```sh
-git tag core-v1.0.1
-git push origin core-v1.0.1
+```ini
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
 ```
 
-Or use a plain `v*` tag if both packages are releasing together:
+Set `NODE_AUTH_TOKEN` in the shell or CI secret store. A CI workflow can use its `GITHUB_TOKEN` when the repository has `read:packages` permission for the package.
 
-```sh
-git tag v1.1.0
-git push origin v1.1.0
-```
+## Add another publishable package
 
-Only plain `v*` tags currently trigger publishing, and the workflow publishes both workspaces. Package-scoped tags do not trigger it; use a plain tag with both versions prepared.
+The publish script discovers packages from the root `workspaces` setting. To add a package:
 
-### 5. Verify
+1. Place it under a directory matched by the root workspace pattern.
+2. Give its `package.json` a unique package name and a version.
+3. Do not set `"private": true` if it should be published.
+4. Build distributable output and point `main`, `types`, and `exports` to the files consumers need.
+5. Set the package's publish registry to `https://npm.pkg.github.com`.
+6. Add the package's usage and release notes to the documentation.
 
-Go to the [Actions tab](https://github.com/AetherAssembly/aether-packages/actions) and confirm the publish workflow completes. The package will appear under the repo's **Packages** section on GitHub.
-
----
-
-## Auth for local development
-
-To install these packages in another repo locally, you need a GitHub personal access token with `read:packages` scope. Add it to `~/.npmrc` (not the project's `.npmrc` — never commit credentials):
-
-```bash
-//npm.pkg.github.com/:_authToken=YOUR_TOKEN_HERE
-```
-
-CI pipelines that install these packages need `NODE_AUTH_TOKEN` set as a secret (or use the built-in `GITHUB_TOKEN` if the consuming repo is within the same organisation and has `read:packages` permission).
-
----
-
-## Adding a new package to the publish workflow
-
-`npm publish --workspaces` publishes every workspace package whose `package.json` does not have `"private": true`. To add a new package to the publish pipeline:
-
-1. Make sure `"private": true` is **not** set in its `package.json`.
-2. Set `"files": ["dist"]` so only built output is included in the published artifact.
-3. Ensure `"main"`, `"types"`, and `"exports"` all point into `dist/`.
-
-The workflow will pick it up automatically on the next tag push.
-
-To exclude a package from publishing (e.g. an internal tooling package), add `"private": true` to its `package.json`.
+Run the release checks before publishing. `npm run test:packages` packs each workspace into a temporary consumer, checks its declarations, ESM and SSR behavior, stylesheet access, and required files. This local check does not publish packages or verify registry authentication.
 
 ## Release readiness
 
-Run lint, no-emit typechecks, build, unit tests, packed-consumer checks, and browser tests before publishing. The publish workflow repeats the release checks. `npm run test:packages` builds a temporary consumer from npm tarballs, checks exported declarations under NodeNext, exercises ESM/SSR imports and styles, and confirms README/LICENSE files are included. It uses installed runtime dependencies/peers and does not test registry authentication.
+From the repository root, run:
 
-The unreleased storage error policy, Input styling/IDs, default Button type, and Modal notifications require a major release. Versions have intentionally not been bumped automatically. Confirm rights to relicense all contributions under MIT before publishing. Existing AGPL release artifacts and third-party dependencies keep their own licenses.
+```sh
+npm run typecheck
+npm run lint
+npm run format:check
+npm run build
+npm test
+npm run test:packages
+npx playwright install chromium
+npm run test:browser
+```
+
+The workflow repeats these checks before publishing.
+
+Review breaking changes before increasing a major version. In particular, check the storage error policy, Input styling and IDs, the default Button type, and Modal dismissal behavior. Confirm that all included contributions can be offered under MIT before publishing a relicensed release. Existing AGPL release artifacts and third-party dependencies keep their own licenses.

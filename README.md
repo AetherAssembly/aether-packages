@@ -1,246 +1,99 @@
-# aether-packages
+# AetherAssembly packages
 
-Shared packages for the AetherAssembly ecosystem, published to the GitHub Package Registry under `@aetherAssembly`.
+Use these shared TypeScript packages to add browser storage or React 19 interface components to an AetherAssembly app. Both packages are published to GitHub Packages under the `@aetherAssembly` scope.
 
-| Package | Description |
-| - | - |
-| [`@aetherAssembly/core`](./packages/core) | Storage adapters and shared TypeScript types |
-| [`@aetherAssembly/ui`](./packages/ui) | React 19 component library |
+| Package                                   | Use it for                                                             |
+| ----------------------------------------- | ---------------------------------------------------------------------- |
+| [`@aetherAssembly/core`](./packages/core) | IndexedDB, localStorage, or in-memory storage with one async interface |
+| [`@aetherAssembly/ui`](./packages/ui)     | React 19 form controls, buttons, cards, badges, and dialogs            |
 
-Consumed by [Driftleaf](https://github.com/AetherAssembly/Driftleaf).
+The packages are used by [Driftleaf](https://github.com/AetherAssembly/Driftleaf) and are available for other apps in the ecosystem.
 
----
+## Install a package
 
-## Installation
+GitHub Packages needs the registry scope and an authenticated token with `read:packages` permission, including for public packages.
 
-Add to your project's `.npmrc` to route the scope to GitHub Packages:
+In the consuming project's `.npmrc`, route the scope to GitHub Packages:
 
 ```ini
 @aetherAssembly:registry=https://npm.pkg.github.com
 ```
 
-Then install:
+Keep the token in your user-level `~/.npmrc` or in your CI secret store, not in the project:
+
+```ini
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
+```
+
+Set `NODE_AUTH_TOKEN` to a GitHub token with `read:packages` access, then install what your app needs:
 
 ```sh
 npm install @aetherAssembly/core
-npm install @aetherAssembly/ui   # React 19 apps only — peer dep: react@^19
+npm install @aetherAssembly/ui react@^19 react-dom@^19
 ```
 
-> **Auth:** GitHub Packages requires a personal access token with `read:packages` scope set as `NODE_AUTH_TOKEN`, even for public packages. Add it to your shell profile or CI secrets.
+The UI package requires React 19 and `react-dom` 19 as peer dependencies.
 
----
+## Add storage with `@aetherAssembly/core`
 
-## `@aetherAssembly/core`
+Choose an adapter based on where the data should live:
 
-### Storage adapters
+| Adapter               | Use it when                                                        | Data lifetime                   |
+| --------------------- | ------------------------------------------------------------------ | ------------------------------- |
+| `IDBAdapter`          | A browser app needs persistent storage through IndexedDB           | Persists in the browser         |
+| `LocalStorageAdapter` | Small values should persist in browser localStorage                | Persists in the browser         |
+| `MemoryAdapter`       | You need temporary state, server-side rendering, or a test adapter | Until the instance is discarded |
 
-All three adapters implement the same async `StorageAdapter` interface — swap them without changing call sites.
-
-```ts
-interface StorageAdapter {
-  get<T>(key: string): Promise<T | null>
-  set<T>(key: string, value: T): Promise<void>
-  delete(key: string): Promise<void>
-  clear(): Promise<void>
-  keys(): Promise<string[]>
-}
-```
-
-#### `IDBAdapter` — IndexedDB
-
-Best choice for browsers. Backed by the [`idb`](https://github.com/jakearchibald/idb) library. Pass a database name and object store name; the store is created on first open.
+All adapters share the same async interface, so you can switch implementations without changing the calls your app makes:
 
 ```ts
 import { IDBAdapter } from '@aetherAssembly/core'
 
-const storage = new IDBAdapter('my-app', 'items')
-
+const storage = new IDBAdapter('my-app', 'settings')
 await storage.set('theme', 'dark')
-const theme = await storage.get<string>('theme') // 'dark'
-await storage.keys()                             // ['theme']
-await storage.delete('theme')
-await storage.clear()
+const theme = await storage.get<string>('theme')
 ```
 
-#### `LocalStorageAdapter` — localStorage
+The interface also provides `delete`, `clear`, and `keys`. Missing keys return `null`. Review [storage behavior and migration guidance](./docs/storage.md) before choosing an adapter for data that must persist.
 
-Async wrapper around `localStorage`. Rejects failures by default, including unavailable storage. Pass `{ errorMode: 'ignore' }` as the second constructor argument to opt into best-effort behavior. An optional prefix scopes all keys — `clear()` and `keys()` only touch keys within that prefix.
+## Build an interface with `@aetherAssembly/ui`
 
-```ts
-import { LocalStorageAdapter } from '@aetherAssembly/core'
+Import the stylesheet once from your app entry point. Override the `--ae-*` CSS custom properties to match your app's theme:
 
-const storage = new LocalStorageAdapter('myapp') // keys stored as "myapp.foo"
+```tsx
+import { Button, Input } from '@aetherAssembly/ui'
+import '@aetherAssembly/ui/styles.css'
 
-await storage.set('darkMode', true)
-await storage.get<boolean>('darkMode') // true
-```
-
-#### `MemoryAdapter` — in-memory
-
-Map-backed, no side effects. Use this in tests instead of mocking the other adapters.
-
-```ts
-import { MemoryAdapter } from '@aetherAssembly/core'
-
-const storage = new MemoryAdapter()
-// same interface — all operations work synchronously under the hood
-```
-
-### Shared types
-
-```ts
-import type { ID, Timestamp, Nullable, Optional, BaseEntity } from '@aetherAssembly/core'
-
-// Extend BaseEntity for any persisted model
-interface WardrobeItem extends BaseEntity {
-  // id: string, createdAt: number, updatedAt: number — all inherited
-  name: string
-  category: string
+export function SettingsForm() {
+  return (
+    <form>
+      <Input label="Display name" name="displayName" />
+      <Button type="submit">Save settings</Button>
+    </form>
+  )
 }
 ```
 
----
+The package also provides `Textarea`, `Select`, `Checkbox`, `Field`, `Modal`, `Card`, and `Badge`. See the [component guide](./docs/ui-components.md) for accessible form patterns, dialog behavior, and theming. Run `npm run gallery` in this repository to try the components interactively.
 
-## `@aetherAssembly/ui`
+## Work on the packages
 
-React 19 components. Styled with `--ae-*` CSS custom properties so each app can map its own palette in.
-
-```ts
-import { Button, Card, Badge, Input, Modal } from '@aetherAssembly/ui'
-```
-
-### Setup
-
-Import the stylesheet once at your app's entry point:
-
-```ts
-import '@aetherAssembly/ui/styles.css'
-```
-
-### Theming
-
-The package ships default token values in [`src/styles.css`](./packages/ui/src/styles.css). Override any of these in your app:
-
-| Group | Prefix | Examples |
-| - | - | - |
-| Colors | `--ae-color-*` | `--ae-color-primary`, `--ae-color-bg`, `--ae-color-text` |
-| Spacing | `--ae-space-*` | `--ae-space-1` through `--ae-space-8` |
-| Typography | `--ae-font-*` | `--ae-font-sans`, `--ae-font-size-sm`, `--ae-line-height-normal` |
-| Radius | `--ae-radius-*` | `--ae-radius-sm`, `--ae-radius-md`, `--ae-radius-full` |
-| Shadows | `--ae-shadow-*` | `--ae-shadow-sm`, `--ae-shadow-md`, `--ae-shadow-lg` |
-
-### Components
-
-All components accept a `className` prop for layering additional styles on top of the token defaults.
-
-**`Button`**
-
-```tsx
-<Button variant="primary" size="md" loading={false} onClick={save}>
-  Save
-</Button>
-```
-
-`variant`: `primary | secondary | ghost | danger` · `size`: `sm | md | lg` · `loading` disables the button and shows a spinner.
-
-**`Card`**
-
-```tsx
-<Card header={<h2>Title</h2>} footer={<Button>Action</Button>}>
-  Content here
-</Card>
-```
-
-**`Badge`**
-
-```tsx
-<Badge variant="success">Synced</Badge>
-<Badge variant="danger">Error</Badge>
-```
-
-`variant`: `default | success | warning | danger | info`
-
-**`Input`**
-
-```tsx
-<Input label="Vault name" error={errors.vaultName} hint="e.g. Personal" />
-```
-
-Generates a unique React ID automatically. `error` sets `aria-invalid` and renders below the field. `hint` renders as muted helper text.
-
-**`Modal`**
-
-```tsx
-<Modal open={isOpen} onClose={() => setOpen(false)} title="Confirm">
-  Are you sure?
-</Modal>
-```
-
-Wraps the native `<dialog>` element with `showModal()` / `close()`.
-
-> The close button is always available. Supply a title or a meaningful `aria-label`. `onClose` requests dismissal; update `open` in the handler.
-
----
-
-## How the ecosystem fits together
-
-```bash
-aether-packages/
-  packages/core      →  @aetherAssembly/core  (published to GHPR)
-  packages/ui        →  @aetherAssembly/ui    (published to GHPR)
-
-Driftleaf/
-  src/renderer       →  uses @aetherAssembly/ui components (Button, Card, Badge, Input, Modal)
-                         imports @aetherAssembly/ui/styles.css once at entry point
-```
-
----
-
-## Development
+Use Node.js 22.22.2+, 24.15+, or 26+. From the repository root, install dependencies and run the checks:
 
 ```sh
-npm install       # install all workspace deps
-npm run build     # tsc --build all packages
-npm test          # vitest across workspaces
-npm run typecheck # type-check without emitting
-npm run clean     # remove dist/ and .tsbuildinfo
+npm install
+npm run build
+npm run typecheck
+npm test
+npm run test:packages
+npm run lint
+npm run format:check
 ```
 
-### Repo layout
+To run the browser checks, install Chromium once with `npx playwright install chromium`, then run `npm run test:browser`.
 
-```bash
-packages/
-  core/
-    src/
-      storage/    # adapter.ts  idb.ts  localstorage.ts  memory.ts
-      types/      # ID, Timestamp, Nullable, Optional, BaseEntity
-    vitest.config.ts
-  ui/
-    src/
-      components/ # Badge  Button  Card  Input  Modal
-      styles.css  # default --ae-* token values
-tsconfig.base.json
-.npmrc            # routes @aetherAssembly to GHPR
-```
+For contribution steps, see [CONTRIBUTING.md](./CONTRIBUTING.md). Maintainers can find release instructions in the [publishing guide](./docs/publishing.md).
 
-## Changelog
+## License
 
-See [CHANGELOG.md](./CHANGELOG.md) for release history.
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines and how to open a PR.
-
-## Forms and component gallery
-
-Textarea, Select, Checkbox, and Field are also exported, alongside public component prop and variant types. Run `npm run gallery` for interactive examples, theme overrides, and keyboard instructions. See [UI documentation](docs/ui-components.md) and [storage documentation](docs/storage.md) for API details and migration notes.
-
-## Verification
-
-`npm run lint`, `npm run typecheck` (no output), `npm test`, `npm run build`, `npm run test:packages` (packed consumer checks), and `npm run test:browser` (native Chromium behavior). Install the browser once with `npx playwright install chromium`. Clean removes build output and incremental caches.
-
-## License and optional attribution
-
-Licensed under [MIT](LICENSE). Please consider crediting "Powered by AetherAssembly" with a link to https://github.com/AetherAssembly/aether-packages in your About/Credits page or documentation. Public credit is appreciated, not required. MIT's copyright and permission notice requirements still apply.
-
-The license change applies to this source revision and future releases; existing AGPL releases retain their published terms. Before publishing a relicensed release, maintainers must confirm that all included contributions can be offered under MIT.
+Licensed under [MIT](./LICENSE). Optional public credit, such as “Powered by AetherAssembly” with a link to https://github.com/AetherAssembly/aether-packages, is appreciated but is not a license requirement. MIT's copyright and permission notice requirements still apply.

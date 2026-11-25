@@ -29,7 +29,7 @@ it('disables loading buttons even with disabled=false and forwards refs', async 
   render(
     <Button ref={ref} loading disabled={false} onClick={onClick}>
       Save
-    </Button>,
+    </Button>
   )
   await userEvent.click(screen.getByRole('button'))
   expect(onClick).not.toHaveBeenCalled()
@@ -40,7 +40,7 @@ it('supports explicit submit buttons and variants', () => {
   render(
     <Button type="submit" variant="danger" size="sm">
       Delete
-    </Button>,
+    </Button>
   )
   expect(screen.getByRole('button')).toHaveAttribute('type', 'submit')
   expect(screen.getByRole('button')).toHaveClass('ae-btn--danger', 'ae-btn--sm')
@@ -52,12 +52,12 @@ describe('fields', () => {
         <Input label="Name" />
         <Input label="Name" />
         <Input hint="Unlabelled helper" aria-label="Other" />
-      </>,
+      </>
     )
     const fields = screen.getAllByLabelText('Name')
     expect(fields[0]?.id).not.toBe(fields[1]?.id)
     expect(screen.getByLabelText('Other')).toHaveAccessibleDescription(
-      'Unlabelled helper',
+      'Unlabelled helper'
     )
   })
   it('merges descriptions, hides hints on error, and preserves caller invalid state', () => {
@@ -71,16 +71,16 @@ describe('fields', () => {
           hint="Hidden"
           aria-describedby="external"
         />
-      </>,
+      </>
     )
     expect(screen.getByLabelText('Name')).toHaveAccessibleDescription(
-      'External Required',
+      'External Required'
     )
     expect(screen.queryByText('Hidden')).not.toBeInTheDocument()
     rerender(<Input label="Name" aria-invalid="grammar" />)
     expect(screen.getByLabelText('Name')).toHaveAttribute(
       'aria-invalid',
-      'grammar',
+      'grammar'
     )
   })
   it('supports refs, native editing, select options and checkbox labels', async () => {
@@ -94,7 +94,7 @@ describe('fields', () => {
           <option value="b">B</option>
         </Select>
         <Checkbox label="Agree" />
-      </>,
+      </>
     )
     await userEvent.type(screen.getByLabelText('Name'), 'Aster')
     await userEvent.type(screen.getByLabelText('Notes'), 'Notes')
@@ -109,7 +109,7 @@ describe('fields', () => {
     render(
       <Field label="Custom" hint="Help">
         {(attributes) => <input {...attributes} />}
-      </Field>,
+      </Field>
     )
     expect(screen.getByLabelText('Custom')).toHaveAccessibleDescription('Help')
   })
@@ -120,7 +120,7 @@ it('renders card slots and badge attributes', () => {
       <Badge variant="success" title="Status">
         Synced
       </Badge>
-    </Card>,
+    </Card>
   )
   expect(screen.getByText('Header')).toBeVisible()
   expect(screen.getByText('Footer')).toBeVisible()
@@ -153,19 +153,19 @@ it('does not notify for prop-driven close; supports untitled accessible names an
   const { rerender } = render(
     <Modal open onClose={onClose} aria-label="Settings">
       Body
-    </Modal>,
+    </Modal>
   )
   const dialog = screen.getByRole('dialog', { name: 'Settings' })
   rerender(
     <Modal open={false} onClose={onClose}>
       Body
-    </Modal>,
+    </Modal>
   )
   expect(onClose).not.toHaveBeenCalled()
   rerender(
     <Modal open onClose={onClose} aria-label="Settings">
       Body
-    </Modal>,
+    </Modal>
   )
   fireEvent(dialog, new Event('cancel', { cancelable: true }))
   expect(onClose).toHaveBeenCalledOnce()
