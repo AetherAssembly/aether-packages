@@ -42,7 +42,7 @@ it('notifies when an external connection blocks an upgrade', async () => {
 })
 it('rejects unsupported values and invalid versions', async () => {
   expect(() => new IDBAdapter('invalid', 'items', { version: 0 })).toThrow(
-    RangeError,
+    RangeError
   )
   const adapter = new IDBAdapter(crypto.randomUUID(), 'items')
   await expect(adapter.set('fn', () => {})).rejects.toThrow()

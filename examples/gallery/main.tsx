@@ -37,7 +37,7 @@ function Gallery() {
               <Button key={variant} variant={variant}>
                 {variant}
               </Button>
-            ),
+            )
           )}
         </div>
         <div className="row">
@@ -60,7 +60,7 @@ function Gallery() {
               <Badge key={variant} variant={variant}>
                 {variant}
               </Badge>
-            ),
+            )
           )}
         </div>
       </Card>

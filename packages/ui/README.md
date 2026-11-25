@@ -1,39 +1,36 @@
 # @aetherAssembly/ui
 
-React 19 components for forms, actions, status, and dialogs. Components use native
-HTML behavior and `--ae-*` CSS custom properties so applications can supply their
-own theme.
+Build React 19 interfaces with accessible buttons, form controls, cards, badges, and dialogs. Components use native HTML behavior and `--ae-*` CSS custom properties, so you can keep familiar browser interactions and match your app's theme.
 
-## Installation
+## Install
 
-Configure your project's `.npmrc` for GitHub Packages:
+In your project's `.npmrc`, route the AetherAssembly scope to GitHub Packages:
 
 ```ini
 @aetherAssembly:registry=https://npm.pkg.github.com
 ```
 
-Configure authentication only in your user-level `~/.npmrc` (in your home
-directory, outside the project repository):
+Add authentication to your user-level `~/.npmrc`, outside the project repository:
 
 ```ini
 //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
 ```
 
-Set `NODE_AUTH_TOKEN` in your shell environment to a GitHub token with
-`read:packages` permission. Keep tokens and authentication settings out of the
-project's `.npmrc` and version control. Then install the package and its React 19 peers:
+Set `NODE_AUTH_TOKEN` to a GitHub token with `read:packages` permission. Do not put the token in a project file or commit it. Install the package with its React peers:
 
 ```sh
 npm install @aetherAssembly/ui react@^19 react-dom@^19
 ```
 
-Import the stylesheet once at your application entry point:
+Import the stylesheet once from your application entry point:
 
 ```tsx
 import '@aetherAssembly/ui/styles.css'
 ```
 
-## Quick start
+## Get started
+
+This example keeps a field controlled by React and opens a dialog when the user asks to preview the result:
 
 ```tsx
 import { useState } from 'react'
@@ -48,7 +45,7 @@ export function Profile() {
       <Input
         label="Display name"
         value={name}
-        onChange={event => setName(event.target.value)}
+        onChange={(event) => setName(event.target.value)}
         hint="Shown to other users"
       />
       <Button onClick={() => setOpen(true)}>Preview</Button>
@@ -60,37 +57,28 @@ export function Profile() {
 }
 ```
 
-## Components
+## Find the right component
 
-| Component | Main props and behavior |
-| --- | --- |
-| `Button` | `variant`: primary, secondary, ghost, danger; `size`: sm, md, lg; `loading` disables interaction and shows a spinner |
-| `Card` | Optional `header` and `footer` slots around body children |
-| `Badge` | `variant`: default, success, warning, danger, info |
-| `Input` | Native input with optional label, hint, and error |
-| `Textarea` | Native multiline input with the same field presentation |
-| `Select` | Native select; provide option children |
-| `Checkbox` | Native checkbox with label, hint, and error |
-| `Field` | Shared label/helper/error wrapper for custom controls |
-| `Modal` | Controlled native dialog with title, close button, and dismissal requests |
+| Component  | Use it for                                          |
+| ---------- | --------------------------------------------------- |
+| `Button`   | Actions, form submission, and loading states        |
+| `Input`    | Single-line text and other native input types       |
+| `Textarea` | Multiline text                                      |
+| `Select`   | A choice from native `<option>` elements            |
+| `Checkbox` | A native checkbox with a label                      |
+| `Field`    | A label and help/error text around a custom control |
+| `Modal`    | A controlled native dialog                          |
+| `Card`     | Content with optional header and footer             |
+| `Badge`    | A short status label                                |
 
-### Buttons and status
+Each component accepts its public props type, such as `InputProps` or `ModalProps`. Native HTML attributes and React 19 refs are supported where relevant.
 
-```tsx
-<Button variant="primary" size="md">Save</Button>
-<Button variant="danger" loading={saving}>Delete</Button>
-<Button type="submit">Submit form</Button>
-<Badge variant="success">Synced</Badge>
-```
+## Build forms
 
-Buttons default to `type="button"`. Set `type="submit"` for form submission.
-Loading always disables the button, even with `disabled={false}`, and sets
-`aria-busy`.
-
-### Forms
+Give each control a visible label or another accessible name. Add `hint` for instructions and `error` for a validation message:
 
 ```tsx
-import { Input, Textarea, Select, Checkbox, Field } from '@aetherAssembly/ui'
+import { Checkbox, Field, Input, Select, Textarea } from '@aetherAssembly/ui'
 
 <Input label="Email" type="email" required hint="For account updates" />
 <Textarea label="Notes" rows={4} />
@@ -100,63 +88,47 @@ import { Input, Textarea, Select, Checkbox, Field } from '@aetherAssembly/ui'
 </Select>
 <Checkbox label="Receive updates" />
 <Field label="Volume" hint="Choose a level">
-  {attributes => <input {...attributes} type="range" />}
+  {(attributes) => <input {...attributes} type="range" />}
 </Field>
 ```
 
-Input, Textarea, Select, and Checkbox support native control attributes, event
-handlers, and React 19 refs. All accept optional `label`, `hint`, `error`, and
-`wrapperClassName`. `className` styles the control itself. Checkbox always uses
-`type="checkbox"`.
+`Input`, `Textarea`, `Select`, and `Checkbox` accept native control props, event handlers, and React 19 refs. They support `label`, `hint`, `error`, and `wrapperClassName`. Use `className` to style the control itself.
 
-IDs use React `useId()` unless explicitly supplied. Repeated labels remain safe;
-provide a label or another accessible name. Errors replace hints, set
-`aria-invalid`, and are linked with `aria-describedby`. Caller-provided
-description references are retained, as is caller `aria-invalid` when no error
-is present.
+Controls generate IDs with React `useId()` unless you provide one. Repeated labels are safe. Error text replaces hint text, sets `aria-invalid`, and is connected through `aria-describedby`; caller-provided description references are retained. Caller-provided `aria-invalid` is preserved when there is no error.
 
-Field's render function supplies `id`, `aria-describedby`, and `aria-invalid`
-for a custom control. With static children, wire the matching ID and accessibility
-attributes yourself.
+`Checkbox` always renders `type="checkbox"`. `Select` uses native options and keyboard behavior. `Field` passes `id`, `aria-describedby`, and `aria-invalid` to a custom control through its render function. If you use static children instead, connect the matching ID and accessibility attributes yourself.
 
-### Dialogs
+## Add actions and status
+
+`Button` variants are `primary`, `secondary`, `ghost`, and `danger`. Sizes are `sm`, `md`, and `lg`. Loading disables the button and sets `aria-busy`, even if `disabled={false}`. Buttons default to `type="button"`; set `type="submit"` when the button should submit a form.
 
 ```tsx
-<Modal
-  open={open}
-  onClose={() => setOpen(false)}
-  title="Confirm deletion"
->
+<Button variant="primary" size="md">Save</Button>
+<Button variant="danger" loading={saving}>Delete</Button>
+<Button type="submit">Submit form</Button>
+<Badge variant="success">Synced</Badge>
+```
+
+Badge variants are `default`, `success`, `warning`, `danger`, and `info`. Cards render an article and support `header`, `footer`, and children. Badges render spans. Both pass through native attributes and `className`.
+
+## Show a dialog
+
+Keep dialog visibility in your app state. `onClose` tells your app that the user requested dismissal; update `open` in the handler:
+
+```tsx
+<Modal open={open} onClose={() => setOpen(false)} title="Confirm deletion">
   <p>Delete this item?</p>
-  <Button variant="danger" onClick={deleteItem}>Delete</Button>
+  <Button variant="danger" onClick={deleteItem}>
+    Delete
+  </Button>
 </Modal>
 ```
 
-The owner controls `open`. `onClose` requests dismissal through the close button,
-Escape, backdrop clicks, or a native dialog close action, once per open cycle.
-Update `open` in the handler. Prop-driven closing does not invoke `onClose`.
+The close button, Escape, backdrop clicks, and native dialog close actions request dismissal once per open cycle. Closing through the `open` prop does not call `onClose`. The title provides the accessible name. For an untitled dialog, provide a meaningful `aria-label` or `aria-labelledby`; the fallback name is “Dialog”. A close button is always available. Native dialog props pass through, and `onCancel` can prevent Escape dismissal. `showModal()` provides native focus behavior and restores focus when the dialog closes.
 
-Titles are connected to the dialog's accessible name. For untitled dialogs,
-supply a meaningful `aria-label` or `aria-labelledby`; the fallback name is
-“Dialog”. A close button is always rendered. Native dialog props pass through;
-`onCancel` can prevent Escape dismissal. Native `showModal()` handles modal focus
-behavior and focus restoration.
+## Match your theme
 
-### Cards
-
-```tsx
-<Card header={<h2>Settings</h2>} footer={<Button>Save</Button>}>
-  <p>Card content</p>
-</Card>
-```
-
-Cards render an article; badges render a span. Their native attributes and
-`className` pass through.
-
-## Theming
-
-Import the stylesheet before your overrides. Customize tokens on `:root` or a
-containing theme element:
+Import the stylesheet before your overrides. Set tokens on `:root` or on a containing element to theme one part of your app:
 
 ```css
 :root {
@@ -175,35 +147,22 @@ containing theme element:
 }
 ```
 
-Token groups cover colors, spacing, typography, radius, shadows, and transitions.
-See the [stylesheet](https://github.com/AetherAssembly/aether-packages/blob/main/packages/ui/src/styles.css)
-for the full list. Components include keyboard focus styles and respect reduced
-motion preferences. Review contrast when customizing your palette.
+Tokens cover colors, spacing, typography, radius, shadows, and transitions. See the [stylesheet](./src/styles.css) for the full list. Components include keyboard focus styles and respect reduced-motion preferences. Check contrast after applying your own palette.
+
+## Use the gallery or upgrade
+
+From the [repository root](../../), run `npm install` and `npm run gallery` to try variants, loading and error states, keyboard examples, and theme overrides.
+
+When upgrading to the next release, move existing Input wrapper styles from `className` to `wrapperClassName`, use explicit IDs if external selectors depended on label text, specify submit button types, and update Modal handlers to treat `onClose` as a dismissal request. See the [component guide](../../docs/ui-components.md) and [changelog](../../CHANGELOG.md).
 
 ## TypeScript exports
 
-Each component exports its corresponding props type, such as `InputProps`,
-`ModalProps`, and `FieldProps`. `ButtonVariant`, `ButtonSize`, and `BadgeVariant`
-are also exported:
+Import component props types along with the components. `ButtonVariant`, `ButtonSize`, and `BadgeVariant` are also available:
 
 ```ts
 import type { ButtonProps, ButtonVariant, InputProps } from '@aetherAssembly/ui'
 ```
 
-## Gallery and migration
-
-From the [repository](https://github.com/AetherAssembly/aether-packages), run
-`npm install` and `npm run gallery` for interactive variants, loading/error states,
-keyboard examples, and theme overrides.
-
-For the upcoming release, move existing Input wrapper styles from `className`
-to `wrapperClassName`, use explicit IDs if external selectors depended on label
-text, specify submit buttons explicitly, and update Modal handlers to treat
-`onClose` as a dismissal request. See the [component guide](https://github.com/AetherAssembly/aether-packages/blob/main/docs/ui-components.md)
-and [changelog](https://github.com/AetherAssembly/aether-packages/blob/main/CHANGELOG.md).
-
 ## License
 
-[MIT](./LICENSE). Optional public credit, such as “Powered by AetherAssembly” with
-a link to the [project](https://github.com/AetherAssembly/aether-packages), is
-appreciated and adds no license condition.
+[MIT](./LICENSE). Optional public credit, such as “Powered by AetherAssembly” with a link to the [project](https://github.com/AetherAssembly/aether-packages), is appreciated but is not a license requirement.

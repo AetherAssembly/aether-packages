@@ -52,8 +52,10 @@
 
   /* Shadows */
   --ae-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --ae-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --ae-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --ae-shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --ae-shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 
   /* Transitions */
   --ae-transition-fast: 100ms ease;
@@ -301,7 +303,8 @@
 .ae-input:focus-visible {
   outline: none;
   border-color: var(--ae-color-border-focus);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ae-color-border-focus) 25%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--ae-color-border-focus) 25%, transparent);
 }
 
 .ae-input-group--error .ae-input {
@@ -309,7 +312,8 @@
 }
 
 .ae-input-group--error .ae-input:focus-visible {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ae-color-danger) 25%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--ae-color-danger) 25%, transparent);
 }
 
 .ae-input-group__error {
@@ -363,11 +367,32 @@
   color: color-mix(in srgb, var(--ae-color-info) 60%, black);
 }
 
-.ae-checkbox { accent-color: var(--ae-color-primary); width: var(--ae-space-4); height: var(--ae-space-4); }
-.ae-checkbox:focus-visible, .ae-modal__close:focus-visible { outline: 2px solid var(--ae-color-border-focus); outline-offset: 2px; }
-textarea.ae-input { min-height: 6rem; resize: vertical; }
-.ae-input:disabled, .ae-checkbox:disabled { opacity: 0.55; cursor: not-allowed; }
+.ae-checkbox {
+  accent-color: var(--ae-color-primary);
+  width: var(--ae-space-4);
+  height: var(--ae-space-4);
+}
+.ae-checkbox:focus-visible,
+.ae-modal__close:focus-visible {
+  outline: 2px solid var(--ae-color-border-focus);
+  outline-offset: 2px;
+}
+textarea.ae-input {
+  min-height: 6rem;
+  resize: vertical;
+}
+.ae-input:disabled,
+.ae-checkbox:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 @media (prefers-reduced-motion: reduce) {
-  .ae-btn, .ae-input, .ae-modal__close { transition: none; }
-  .ae-btn__spinner { animation: none; }
+  .ae-btn,
+  .ae-input,
+  .ae-modal__close {
+    transition: none;
+  }
+  .ae-btn__spinner {
+    animation: none;
+  }
 }

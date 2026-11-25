@@ -143,7 +143,7 @@ describe('LocalStorageAdapter', () => {
         throw error
       })
       await expect(adapter.set('key', 'value')).rejects.toThrow(
-        'QuotaExceededError',
+        'QuotaExceededError'
       )
       expect(onError).toHaveBeenCalledWith(error)
     })
@@ -154,7 +154,7 @@ describe('LocalStorageAdapter', () => {
         throw new Error('QuotaExceededError')
       })
       await expect(adapter.set('key', 'value')).rejects.toThrow(
-        'QuotaExceededError',
+        'QuotaExceededError'
       )
     })
   })
@@ -192,7 +192,7 @@ it('explicit ignore mode observes failures and returns fallbacks', async () => {
   })
   const onError = vi.fn()
   await expect(
-    new LocalStorageAdapter('', { errorMode: 'ignore', onError }).set('key', 1),
+    new LocalStorageAdapter('', { errorMode: 'ignore', onError }).set('key', 1)
   ).resolves.toBeUndefined()
   expect(onError).toHaveBeenCalledOnce()
 })

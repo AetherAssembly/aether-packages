@@ -12,9 +12,7 @@ test('native dialog traps focus, handles Escape, and restores trigger focus', as
   // through browser chrome (reported as body), but never to background controls.
   await trigger.evaluate((element) => element.focus())
   expect(
-    await dialog.evaluate((element) =>
-      element.contains(document.activeElement),
-    ),
+    await dialog.evaluate((element) => element.contains(document.activeElement))
   ).toBe(true)
   for (let i = 0; i < 6; i++) {
     await page.keyboard.press('Tab')
@@ -22,8 +20,8 @@ test('native dialog traps focus, handles Escape, and restores trigger focus', as
       await dialog.evaluate(
         (el) =>
           document.activeElement === document.body ||
-          el.contains(document.activeElement),
-      ),
+          el.contains(document.activeElement)
+      )
     ).toBe(true)
   }
   await page.keyboard.press('Escape')

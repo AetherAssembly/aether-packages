@@ -1,33 +1,30 @@
 # @aetherAssembly/core
 
-Async key-value storage adapters and shared TypeScript types for AetherAssembly
-applications. Use the same storage interface with IndexedDB, localStorage, or an
-in-memory Map. No React dependency is required.
+Give your app one async key-value API for browser storage and temporary state. Choose IndexedDB for structured, persistent browser data, localStorage for JSON values, or an in-memory adapter for tests and non-persistent use. The package does not depend on React.
 
-## Installation
+## Install
 
-Configure the GitHub Packages scope in your project's `.npmrc`:
+In your project's `.npmrc`, route the AetherAssembly scope to GitHub Packages:
 
 ```ini
 @aetherAssembly:registry=https://npm.pkg.github.com
 ```
 
-Configure authentication only in your user-level `~/.npmrc` (in your home
-directory, outside the project repository):
+Add authentication to your user-level `~/.npmrc`, outside the project repository:
 
 ```ini
 //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
 ```
 
-Set `NODE_AUTH_TOKEN` in your environment to a GitHub token with
-`read:packages` permission. Keep tokens and authentication settings out of the
-project's `.npmrc` and version control. Then install:
+Set `NODE_AUTH_TOKEN` to a GitHub token with `read:packages` permission. Do not put the token in a project file or commit it. Install the package:
 
 ```sh
 npm install @aetherAssembly/core
 ```
 
-## Quick start
+## Get started
+
+Use `MemoryAdapter` to try the API without setting up a browser database:
 
 ```ts
 import { MemoryAdapter, type StorageAdapter } from '@aetherAssembly/core'
@@ -39,36 +36,31 @@ console.log(settings?.theme) // 'dark'
 await storage.delete('settings')
 ```
 
-## Storage interface
+## Choose an adapter
 
-Every adapter implements these methods:
+| Adapter               | Best for                                                                     | Persistence and values                     |
+| --------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
+| `IDBAdapter`          | Browser data that should survive reloads and may use structured-clone values | IndexedDB persists data                    |
+| `LocalStorageAdapter` | Small browser values that can be represented as JSON                         | localStorage persists serialized data      |
+| `MemoryAdapter`       | Tests, server-side rendering, and temporary state                            | Data lives as long as the adapter instance |
 
-| Method | Result |
-| --- | --- |
-| `get<T>(key: string)` | `Promise<T \| null>`; missing keys return `null` |
-| `set<T>(key: string, value: T)` | `Promise<void>`; creates or overwrites a value |
-| `delete(key: string)` | `Promise<void>`; missing keys are harmless |
-| `clear()` | `Promise<void>`; removes keys within the adapter's scope |
-| `keys()` | `Promise<string[]>`; returns unprefixed keys in unspecified order |
+All three implement the same interface:
 
-`get<T>` does not validate data at runtime. Stored `null` and missing values both
-read as `null`. Operations reject on backend failures unless explicitly configured
-otherwise for localStorage.
+| Method               | Result                                                            |
+| -------------------- | ----------------------------------------------------------------- |
+| `get<T>(key)`        | `Promise<T \| null>`; returns `null` when the key is missing      |
+| `set<T>(key, value)` | `Promise<void>`; creates or replaces a value                      |
+| `delete(key)`        | `Promise<void>`; succeeds if the key is already missing           |
+| `clear()`            | `Promise<void>`; removes keys owned by this adapter               |
+| `keys()`             | `Promise<string[]>`; returns unprefixed keys in unspecified order |
 
-## Choosing an adapter
+`get<T>` is a TypeScript assertion, not runtime validation. Stored `null` and a missing key both read as `null`. Use plain JSON values when the same data must work with every adapter: strings, booleans, finite numbers, `null`, arrays, and plain objects. Avoid `undefined`, `BigInt`, functions, cycles, and custom classes.
 
-| Adapter | Environment | Persistence and value behavior |
-| --- | --- | --- |
-| `IDBAdapter` | Browsers with IndexedDB | Persistent, structured-clone values |
-| `LocalStorageAdapter` | Environments with localStorage | Persistent, JSON serialization |
-| `MemoryAdapter` | Browsers, Node.js, SSR, tests | Instance lifetime; retains object references |
+The adapters handle values differently. `MemoryAdapter` keeps object references, so mutating a stored object changes the stored value. localStorage serializes values as JSON and returns newly parsed objects. IndexedDB uses structured cloning, so it supports more browser-cloneable values than JSON.
 
-For portable values, use plain JSON data: strings, booleans, finite numbers, null,
-arrays, and plain objects. Avoid undefined, BigInt, functions, cycles, and custom
-classes when swapping backends. Mutating an object stored in MemoryAdapter changes
-the stored value; the persistent adapters return deserialized or cloned values.
+## Store data in IndexedDB
 
-### IndexedDB
+Pass the same schema to every adapter that opens a database. List all stores together and increase the version when adding a store:
 
 ```ts
 import { IDBAdapter, type IDBAdapterOptions } from '@aetherAssembly/core'
@@ -88,64 +80,57 @@ await items.close()
 await settings.close()
 ```
 
-The constructor begins opening the database immediately. Declare all stores in a
-shared schema; increase `version` when adding stores. Existing stores and records
-are retained. Opening a missing store without an upgrade fails on operations with
-an explanatory error.
+The constructor starts opening the database immediately. Existing stores and records are retained when the schema version increases. Opening a store that does not exist at the current version fails when you use it.
 
-Connections close automatically when another connection requests an upgrade.
-Create new adapters using the new version afterward. `close()` releases a
-connection; subsequent operations reject. `onTerminated` reports abnormal
-termination. External connections must also cooperate with version changes.
-IndexedDB is unavailable in Node.js/SSR; use MemoryAdapter for non-persistent data.
+Adapters close their connections when another connection requests an upgrade. Create new adapters using the new version afterward. Call `close()` when you are done; operations on a closed adapter reject. `onTerminated` reports abnormal termination. Other connections to the database must also cooperate with version changes.
 
-### localStorage
+IndexedDB is unavailable in Node.js and server-side rendering. Use `MemoryAdapter` when storage does not need to persist there.
+
+## Store data in localStorage
+
+Pass a prefix to keep this adapter's keys separate from other app data:
 
 ```ts
 import { LocalStorageAdapter } from '@aetherAssembly/core'
 
 const settings = new LocalStorageAdapter('myapp', {
-  onError: error => console.error('Storage failed', error),
+  onError: (error) => console.error('Storage failed', error),
 })
 
 try {
   await settings.set('theme', 'dark') // Stored under "myapp.theme"
 } catch {
-  // Report the save failure to the user.
+  // Show or record the save failure.
 }
 ```
 
-A prefix scopes `keys()` and `clear()`. Without one, `clear()` removes all
-localStorage keys for the origin. Choose disjoint prefixes; nested prefixes can
-overlap.
+The prefix scopes `keys()` and `clear()`. Without a prefix, `clear()` removes every localStorage key for the current origin. Choose disjoint prefixes because nested prefixes can overlap.
 
-By default, unavailable storage, blocked access, quota errors, malformed JSON,
-and serialization failures reject. `onError` observes failures without suppressing
-them. For explicitly best-effort storage:
+By default, unavailable storage, blocked access, quota errors, malformed JSON, and serialization failures reject. `onError` observes a failure but does not suppress it. For explicitly best-effort storage, opt into ignore mode:
 
 ```ts
-const optionalCache = new LocalStorageAdapter('cache', { errorMode: 'ignore' })
+const optionalCache = new LocalStorageAdapter('cache', {
+  errorMode: 'ignore',
+})
 ```
 
-In ignore mode, failed reads return `null`, failed key listing returns `[]`, and
-failed writes, deletes, and clears resolve. A throwing `onError` callback still
-rejects. Neither mode rolls back a partially completed clear.
+In ignore mode, failed reads return `null`, failed key listing returns `[]`, and failed writes, deletes, and clears resolve. A throwing `onError` callback still rejects. A partially completed `clear()` cannot be rolled back.
 
-### Memory
+## Use the in-memory adapter
 
-```ts
-const storage = new MemoryAdapter()
-```
+Each `MemoryAdapter` instance owns an independent `Map`. Data disappears when the instance is discarded. This makes it useful for feature tests and temporary state, but it does not test persistence, serialization, or backend failures. Test those behaviors with the adapter your app will use.
 
-Each instance has an independent Map. Data disappears with the instance. Useful
-for feature tests and temporary state, but test persistent adapters directly when
-serialization and backend failures matter.
+## Import shared types
 
-## Shared types
+Use `BaseEntity` when a persisted model needs the standard ID and timestamps:
 
 ```ts
 import type {
-  BaseEntity, ID, Timestamp, Nullable, Optional,
+  BaseEntity,
+  ID,
+  Timestamp,
+  Nullable,
+  Optional,
 } from '@aetherAssembly/core'
 
 interface Item extends BaseEntity {
@@ -156,19 +141,14 @@ interface Item extends BaseEntity {
 // Nullable<T> = T | null; Optional<T> = T | undefined
 ```
 
-Public storage types include `StorageAdapter`, `IDBAdapterOptions`, and
-`LocalStorageAdapterOptions`.
+The package also exports `StorageAdapter`, `IDBAdapterOptions`, and `LocalStorageAdapterOptions`.
 
-## Migration notes
+## Upgrade from 1.x
 
-The upcoming release changes localStorage failures from silent fallbacks to
-rejected promises. Handle failures or explicitly select `errorMode: 'ignore'`.
-Applications sharing an IndexedDB database should declare all stores together and
-coordinate schema versions. See the [storage guide](https://github.com/AetherAssembly/aether-packages/blob/main/docs/storage.md)
-and [changelog](https://github.com/AetherAssembly/aether-packages/blob/main/CHANGELOG.md).
+localStorage failures now reject by default instead of silently returning fallback values. Catch failures in your app or explicitly choose `errorMode: 'ignore'`. If multiple adapters share an IndexedDB database, declare all stores together and coordinate schema versions.
+
+See the [storage guide](../../docs/storage.md) for migration patterns and the [changelog](../../CHANGELOG.md) for release history.
 
 ## License
 
-[MIT](./LICENSE). Optional public credit, such as “Powered by AetherAssembly” with
-a link to the [project](https://github.com/AetherAssembly/aether-packages), is
-appreciated and adds no license condition.
+[MIT](./LICENSE). Optional public credit, such as “Powered by AetherAssembly” with a link to the [project](https://github.com/AetherAssembly/aether-packages), is appreciated but is not a license requirement.

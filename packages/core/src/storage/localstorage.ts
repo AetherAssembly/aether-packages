@@ -9,7 +9,7 @@ export type LocalStorageAdapterOptions = {
 export class LocalStorageAdapter implements StorageAdapter {
   constructor(
     private readonly prefix = '',
-    private readonly options: LocalStorageAdapterOptions = {},
+    private readonly options: LocalStorageAdapterOptions = {}
   ) {}
 
   private key(key: string): string {
@@ -20,7 +20,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     try {
       if (typeof localStorage === 'undefined')
         throw new Error(
-          'localStorage is unavailable. Use MemoryAdapter for non-persistent storage.',
+          'localStorage is unavailable. Use MemoryAdapter for non-persistent storage.'
         )
       return operation(localStorage)
     } catch (error) {

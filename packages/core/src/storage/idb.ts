@@ -16,11 +16,11 @@ export class IDBAdapter implements StorageAdapter {
   constructor(
     dbName: string,
     private readonly storeName: string,
-    options: IDBAdapterOptions = {},
+    options: IDBAdapterOptions = {}
   ) {
     if (typeof indexedDB === 'undefined')
       throw new Error(
-        'IDBAdapter requires IndexedDB. Use MemoryAdapter for Node.js / SSR; it does not persist data.',
+        'IDBAdapter requires IndexedDB. Use MemoryAdapter for Node.js / SSR; it does not persist data.'
       )
     const version = options.version ?? 1
     if (!Number.isSafeInteger(version) || version < 1)
@@ -53,7 +53,7 @@ export class IDBAdapter implements StorageAdapter {
     if (this.closed) throw new Error('IDBAdapter is closed')
     if (!db.objectStoreNames.contains(this.storeName))
       throw new Error(
-        `Store "${this.storeName}" is missing. Increase version and declare all stores in options.stores.`,
+        `Store "${this.storeName}" is missing. Increase version and declare all stores in options.stores.`
       )
     return db
   }
