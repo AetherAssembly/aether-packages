@@ -8,6 +8,8 @@
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint packages/*/src --ext .ts,.tsx",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "npm run typecheck --workspaces",
     "clean": "npm run clean --workspaces",
     "test:packages": "node scripts/verify-packages.mjs",
